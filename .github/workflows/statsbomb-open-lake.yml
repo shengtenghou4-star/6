@@ -22,8 +22,9 @@ jobs:
       - name: Acquire and profile StatsBomb Open Data
         run: python scripts/backfill_statsbomb_open.py --output-root artifacts/statsbomb-open --min-matches 1000
       - name: Upload event-lake evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: statsbomb-open-lake
           path: artifacts/statsbomb-open
-          if-no-files-found: error
+          if-no-files-found: warn
