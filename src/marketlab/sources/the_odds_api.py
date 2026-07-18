@@ -8,6 +8,7 @@ import requests
 
 
 BASE_URL = "https://api.the-odds-api.com/v4"
+PUBLIC_EPL_SAMPLE_URL = "https://public-odds-api-sample-data.s3.amazonaws.com/historical-epl.json"
 
 
 @dataclass(frozen=True, slots=True)
@@ -27,6 +28,26 @@ def estimate_snapshot_credits(*, regions: int, markets: int, snapshots: int) -> 
     if min(regions, markets, snapshots) < 0:
         raise ValueError("regions, markets and snapshots must be non-negative")
     return 10 * regions * markets * snapshots
+
+
+def _validate_historical_payload(payload: Any) -> dict[str, Any]:
+    if not isinstance(payload, dict) or "timestamp" not in payload or "data" not in payload:
+        raise ValueError("Unexpected historical odds response shape")
+    if not isinstance(payload["data"], list):
+        raise ValueError("Historical odds data must be a list")
+    return payload
+
+
+def fetch_public_epl_sample(
+    *,
+    timeout: float = 30.0,
+    session: requests.Session | None = None,
+) -> dict[str, Any]:
+    """Fetch The Odds API's official public historical EPL sample without credentials."""
+    client = session or requests.Session()
+    response = client.get(PUBLIC_EPL_SAMPLE_URL, timeout=timeout)
+    response.raise_for_status()
+    return _validate_historical_payload(response.json())
 
 
 def fetch_historical_snapshot(
@@ -57,7 +78,4 @@ def fetch_historical_snapshot(
         for key, value in response.headers.items()
         if key.lower() in {"x-requests-used", "x-requests-remaining", "x-requests-last"}
     }
-    payload = response.json()
-    if not isinstance(payload, dict) or "timestamp" not in payload or "data" not in payload:
-        raise ValueError("Unexpected historical odds response shape")
-    return payload, headers
+    return _validate_historical_payload(response.json()), headers
