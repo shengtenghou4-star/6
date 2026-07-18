@@ -10,26 +10,40 @@ Official historical featured-market pricing formula:
 
 Historical snapshots are documented at 10-minute intervals from 2020-06-06 and 5-minute intervals from September 2022 for covered sports/bookmakers. A historical query returns the sport's events and bookmaker states for the requested regions/markets at the closest available snapshot at or before the requested timestamp.
 
-### Illustrative credit budgets
+### Current public self-serve plans observed 2026-07-18
 
-For one soccer competition, continuously polling three regions and three featured markets:
+- 20K credits: US$30/month
+- 100K credits: US$59/month
+- 5M credits: US$119/month
+- 15M credits: US$249/month
 
-- per snapshot: 90 credits
-- 24 hours at 5-minute resolution: 288 snapshots = 25,920 credits
-- 30 days continuous: 777,600 credits
-- 270-day season continuous: 6,998,400 credits
+Historical access is included on paid plans. Provider documentation also states that empty historical responses do not consume quota, while non-empty historical usage is charged by unique returned markets × requested regions.
 
-This means brute-force continuous backfill is possible but wasteful at scale. The query returns all currently listed events in a sport, so extraction should exploit fixture calendars and only traverse windows in which relevant pre-match markets exist.
+### What those credits mean at 5-minute resolution
 
-### Better strategy
+Ignoring empty-response savings and assuming one request per snapshot:
 
-1. Start with 1X2 only and a small region/bookmaker set to measure coverage continuity.
-2. Learn how early each competition is normally listed.
-3. Traverse only active pre-match windows rather than every five minutes of an entire calendar year.
-4. Add regions/markets only when sample evidence shows incremental value.
-5. Store responses permanently so no timestamp is paid for twice.
+| Plan | 1 region × 1 market | 2 regions × 1 market | 2 regions × 3 markets |
+|---|---:|---:|---:|
+| 20K | ~6.9 continuous days | ~3.5 days | ~1.2 days |
+| 100K | ~34.7 days | ~17.4 days | ~5.8 days |
+| 5M | ~1,736 days | ~868 days | ~289 days |
+| 15M | ~5,208 days | ~2,604 days | ~868 days |
 
-Important caveat: official documentation states that spreads and totals are mainly available for US sports/bookmakers. Soccer Asian-handicap and totals depth must be measured empirically before treating The Odds API as the core AH source.
+These are deliberately conservative continuous-polling equivalents, not recommended extraction plans. A soccer competition is only meaningfully priced around active fixture windows; targeted traversal can cover much more calendar history per credit.
+
+### Practical acquisition design
+
+1. **Do not start with every market.** First validate 1X2 continuity using the minimum region set that contains the target bookmakers.
+2. **Traverse fixture windows, not calendar time.** Learn typical first-listing horizons by competition, then query only from market appearance through cutoff/kickoff.
+3. **Use snapshot links.** Where available, follow `previous_timestamp` / `next_timestamp` rather than guessing unnecessary empty timestamps.
+4. **Persist every paid response immutably.** Never pay twice for the same timestamp/source scope.
+5. **Measure bookmaker continuity before scaling leagues.** A large credit plan is worthless if the specific bookmakers needed for the hypothesis are sparse in older seasons.
+6. **Add Asian handicap/totals only after sample evidence.** Public soccer samples currently prove multi-bookmaker 1X2 schema/coverage, not deep historical AH/totals continuity.
+
+### Current decision rule
+
+The 5M plan is economically interesting enough that The Odds API should not be dismissed as “too expensive” before a narrow authenticated sample. However, no subscription should be bought solely from documentation. First run the repository's credit-capped sampler on a small paid plan or existing key, measure actual bookmaker continuity and returned-market cost, then decide whether 5M/15M bulk extraction is justified.
 
 Evidence:
 - https://the-odds-api.com/historical-odds-data/
@@ -107,7 +121,7 @@ Evidence:
 
 1. Free/public baselines first: Football-Data + StatsBomb Open Data for pipeline and entity experiments.
 2. Add **Betfair Basic** early because it is a free historical microstructure baseline at roughly one-minute granularity.
-3. Use official The Odds API public historical samples, then buy only a small historical plan if multi-bookmaker continuity warrants it.
+3. Use official The Odds API public historical samples, then run a **strictly capped authenticated sample** before choosing a 5M/15M extraction plan.
 4. Request Tx LAB sample/quote because it may replace a large amount of piecemeal retrospective acquisition.
 5. Upgrade Betfair to Advanced/Pro only after measured incremental-value tests.
 6. Select a broad prospective feed and begin permanent self-archiving as early as practical.
