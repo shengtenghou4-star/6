@@ -50,7 +50,14 @@ def parse_csv_bytes(content: bytes) -> list[dict[str, str]]:
     reader = csv.DictReader(io.StringIO(text))
     if not reader.fieldnames:
         return []
-    rows = [dict(row) for row in reader if row and any(value not in (None, "") for value in row.values())]
+    rows: list[dict[str, str]] = []
+    for raw_row in reader:
+        if not raw_row or not any(value not in (None, "") for value in raw_row.values()):
+            continue
+        # Some legacy files contain overflow cells that csv.DictReader stores under a None key.
+        # Preserve named source fields and drop only the structurally unaddressable overflow key.
+        row = {str(key): value for key, value in raw_row.items() if key is not None}
+        rows.append(row)
     return rows
 
 
