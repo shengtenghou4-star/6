@@ -9,6 +9,8 @@ description = "Research-first football betting market data and anomaly laborator
 requires-python = ">=3.11"
 dependencies = [
   "requests>=2.32,<3",
+  "numpy>=1.26,<3",
+  "pandas>=2.2,<3",
 ]
 
 [project.optional-dependencies]
