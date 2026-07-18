@@ -21,11 +21,13 @@ jobs:
         run: python -m pip install -e .
       - name: Acquire and profile StatsBomb Open Data
         run: python scripts/backfill_statsbomb_open.py --output-root artifacts/statsbomb-open --min-matches 1000
-      - name: Upload event-lake evidence
+      - name: Upload compact event-lake evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: statsbomb-open-lake
-          path: artifacts/statsbomb-open
+          name: statsbomb-open-lake-evidence
+          path: |
+            artifacts/statsbomb-open/profile.json
+            artifacts/statsbomb-open/progress.json
+            artifacts/statsbomb-open/failure.json
           if-no-files-found: warn
-          compression-level: 0
