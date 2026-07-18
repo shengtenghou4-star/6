@@ -5,6 +5,7 @@ on:
   pull_request:
     paths:
       - "scripts/build_entity_spine.py"
+      - "scripts/backfill_football_data_full_archive.py"
       - ".github/workflows/entity-spine-v0.yml"
 
 jobs:
