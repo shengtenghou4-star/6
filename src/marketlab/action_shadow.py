@@ -21,8 +21,18 @@ from .action_shadow_schema import (
 )
 
 
-def _predict_delta(models: Mapping[str, Any], prefix: str, x: np.ndarray, current: np.ndarray) -> np.ndarray:
-    raw = np.column_stack([models[f"{prefix}_delta_{outcome}"].predict(x) for outcome in OUTCOMES])
+def _predict_raw_delta(models: Mapping[str, Any], prefix: str, x: np.ndarray) -> np.ndarray:
+    return np.column_stack(
+        [models[f"{prefix}_delta_{outcome}"].predict(x) for outcome in OUTCOMES]
+    )
+
+
+def _predict_normal_action_delta(
+    models: Mapping[str, Any],
+    x: np.ndarray,
+    current: np.ndarray,
+) -> np.ndarray:
+    raw = _predict_raw_delta(models, "normal", x)
     return normalize_probabilities(current + raw) - current
 
 
@@ -31,7 +41,7 @@ def score_shadow_records(records: pd.DataFrame, bundle: LoadedShadowBundle) -> p
     normal_x = records[list(NORMAL_FEATURES)].to_numpy(float)
     current = records[["own_current_home_p", "own_current_draw_p", "own_current_away_p"]].to_numpy(float)
     normal_probability = bundle.models["normal_hazard"].predict_proba(normal_x)[:, 1]
-    predicted_action_delta = _predict_delta(bundle.models, "normal", normal_x, current)
+    predicted_action_delta = _predict_normal_action_delta(bundle.models, normal_x, current)
     actual_delta = records[["actual_delta_home_p", "actual_delta_draw_p", "actual_delta_away_p"]].to_numpy(float)
     actual_move = records["actual_move"].to_numpy(int)
     conditional_residual = actual_delta - predicted_action_delta
@@ -50,11 +60,14 @@ def score_shadow_records(records: pd.DataFrame, bundle: LoadedShadowBundle) -> p
     if action_values.shape[1] != len(ACTION_RESIDUAL_FEATURES):
         raise RuntimeError("action residual feature-width mismatch")
     action_x = np.column_stack([raw_x, action_values])
-    observation = records[["observation_home_p", "observation_draw_p", "observation_away_p"]].to_numpy(float)
     raw_close_probability = bundle.models["closing_raw_hazard"].predict_proba(raw_x)[:, 1]
     action_close_probability = bundle.models["closing_action_hazard"].predict_proba(action_x)[:, 1]
-    raw_close_delta = _predict_delta(bundle.models, "closing_raw", raw_x, observation)
-    action_close_delta = _predict_delta(bundle.models, "closing_action", action_x, observation)
+
+    # Experiments 008/011/013 ranked closing candidates using the regressors'
+    # direct probability-delta predictions. Only the normal-action layer projected
+    # current + delta back to the probability simplex before residual formation.
+    raw_close_delta = _predict_raw_delta(bundle.models, "closing_raw", raw_x)
+    action_close_delta = _predict_raw_delta(bundle.models, "closing_action", action_x)
     raw_expected = raw_close_probability[:, None] * raw_close_delta
     action_expected = action_close_probability[:, None] * action_close_delta
     raw_outcome_index = np.argmax(raw_expected, axis=1)
