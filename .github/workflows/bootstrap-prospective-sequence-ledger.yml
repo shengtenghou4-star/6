@@ -97,3 +97,5 @@ This phase creates collection and target infrastructure only. It does not score 
           fi
           git commit -m "Build prospective odds sequence ledger"
           git push origin HEAD:${{ github.head_ref }}
+
+# One-shot bootstrap: remove after the generated source commit is verified.
