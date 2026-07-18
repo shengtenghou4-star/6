@@ -1,0 +1,38 @@
+name: Abnormal Action Residuals v0
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "scripts/generate_abnormal_action_residuals.py"
+      - ".github/workflows/residual-generation-v0.yml"
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install
+        run: python -m pip install -e . pandas numpy scikit-learn
+      - name: Generate frozen outcome-blind residuals
+        run: >-
+          python scripts/generate_abnormal_action_residuals.py
+          --output-root artifacts/abnormal-action-residuals
+          --chunksize 128
+          --hazard-max-train 500000
+          --movement-max-train 400000
+      - name: Upload residual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: abnormal-action-residuals-v0
+          path: |
+            artifacts/abnormal-action-residuals/manifest.json
+            artifacts/abnormal-action-residuals/residuals_validation.csv.gz
+            artifacts/abnormal-action-residuals/residuals_test.csv.gz
+          if-no-files-found: warn
