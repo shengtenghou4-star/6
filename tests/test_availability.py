@@ -16,21 +16,26 @@ def test_identity_fields_are_safe_by_default() -> None:
 
 
 def test_results_and_match_stats_are_blocked() -> None:
-    assert classify_football_data_column("FTR").availability == AvailabilityClass.POSTMATCH_OUTCOME
-    assert classify_football_data_column("HST").availability == AvailabilityClass.POSTMATCH_STATS
-    assert classify_football_data_column("FTR").default_prematch_safe is False
-    assert classify_football_data_column("HST").default_prematch_safe is False
+    for column in ("FTR",):
+        assert classify_football_data_column(column).availability == AvailabilityClass.POSTMATCH_OUTCOME
+    for column in ("HST", "Attendance", "HO", "AO", "HFKC", "AFKC", "HBP", "ABP"):
+        assert classify_football_data_column(column).availability == AvailabilityClass.POSTMATCH_STATS
+        assert classify_football_data_column(column).default_prematch_safe is False
 
 
 def test_closing_market_fields_are_blocked() -> None:
-    for column in ("AvgCH", "AvgCD", "AvgCA", "B365CH", "B365CA"):
+    for column in ("AvgCH", "AvgCD", "AvgCA", "B365CH", "B365CA", "1XBCH", "BFCA", "BMGMCH", "AHCh"):
         decision = classify_football_data_column(column)
         assert decision.availability == AvailabilityClass.MARKET_CLOSING
         assert decision.default_prematch_safe is False
 
 
 def test_coarse_market_fields_require_explicit_protocol() -> None:
-    for column in ("B365H", "B365D", "B365A", "PSH", "AvgH"):
+    for column in (
+        "B365H", "B365D", "B365A", "PSH", "AvgH",
+        "1XBH", "BFH", "BFEA", "BMGMH", "BVH", "CLH",
+        "B365AHH", "AvgAHA", "PAHH", "AHh", "BbAHh",
+    ):
         decision = classify_football_data_column(column)
         assert decision.availability == AvailabilityClass.MARKET_FIRST_SET_UNKNOWN_TIME
         assert decision.default_prematch_safe is False
