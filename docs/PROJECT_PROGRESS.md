@@ -42,14 +42,14 @@ Completed/strongly evidenced:
 - research constitution/falsification framework
 - source map and vendor benchmark method
 - reproducible Python/CI/raw-preservation foundation
-- initial 19,763-row Big-5 public baseline
+- broad Football-Data archive: 240,023 matches, 33 seasons, 22 divisions, 222 unioned fields
 - first preregistered external-holdout experiment (inconclusive signal, valid pipeline evidence)
 
 In progress:
 - full StatsBomb Open event lake
-- full Football-Data seasonal archive expansion
 - Tier-1 high-resolution market source sampling/acquisition
+- expansion of player/context layers after event-lake profiling
 
-Current overall estimate before the in-progress lake expansions finish: **~30%**.
+Current overall estimate: **~33%**.
 
 This percentage should only move when a gate produces verified evidence.
