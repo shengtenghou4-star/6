@@ -22,8 +22,9 @@ jobs:
       - name: Backfill full seasonal archive
         run: python scripts/backfill_football_data_full_archive.py --output-root artifacts/football-data-full-archive --min-rows 100000
       - name: Upload full archive evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: football-data-full-archive
           path: artifacts/football-data-full-archive
-          if-no-files-found: error
+          if-no-files-found: warn
