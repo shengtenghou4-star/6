@@ -1,0 +1,77 @@
+name: Prospective Odds Snapshot
+
+on:
+  workflow_dispatch:
+    inputs:
+      sport:
+        description: The Odds API sport key
+        required: true
+        default: soccer_epl
+        type: string
+      markets:
+        description: Comma-separated featured markets
+        required: true
+        default: h2h
+        type: string
+      regions:
+        description: Comma-separated regions; leave bookmakers empty
+        required: false
+        default: uk,eu
+        type: string
+      bookmakers:
+        description: Optional comma-separated bookmaker keys; overrides regions only when regions is empty
+        required: false
+        default: ""
+        type: string
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install
+        run: python -m pip install -e .
+      - name: Validate secret
+        shell: bash
+        run: |
+          if [[ -z "${THE_ODDS_API_KEY}" ]]; then
+            echo "THE_ODDS_API_KEY repository secret is not configured; no request sent."
+            exit 1
+          fi
+      - name: Collect one immutable snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=(
+            --sport "${{ inputs.sport }}"
+            --markets "${{ inputs.markets }}"
+            --output-root artifacts/prospective-odds
+          )
+          if [[ -n "${{ inputs.bookmakers }}" ]]; then
+            if [[ -n "${{ inputs.regions }}" ]]; then
+              echo "Set either regions or bookmakers, not both."
+              exit 2
+            fi
+            args+=(--bookmakers "${{ inputs.bookmakers }}")
+          else
+            args+=(--regions "${{ inputs.regions }}")
+          fi
+          python scripts/collect_the_odds_api_snapshot.py "${args[@]}"
+      - name: Upload snapshot evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prospective-odds-snapshot-${{ github.run_id }}
+          path: artifacts/prospective-odds/
+          retention-days: 90
+          if-no-files-found: warn
+
+# Intentionally manual-only. Do not add a schedule until provider scope,
+# credit budget and a persistent storage sink are frozen.
