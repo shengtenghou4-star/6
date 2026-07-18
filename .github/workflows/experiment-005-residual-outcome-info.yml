@@ -29,16 +29,20 @@ jobs:
           --hazard-max-train 500000
           --movement-max-train 400000
       - name: Run preregistered incremental outcome-information test
-        run: >-
-          python scripts/experiment_005_residual_outcome_info.py
-          --residual-root artifacts/abnormal-action-residuals
-          --output-root artifacts/experiment-005
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p artifacts/experiment-005
+          python scripts/experiment_005_residual_outcome_info.py \
+            --residual-root artifacts/abnormal-action-residuals \
+            --output-root artifacts/experiment-005 \
+            2>&1 | tee artifacts/experiment-005/run.log
       - name: Upload result evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: experiment-005-residual-outcome-information
           path: |
-            artifacts/experiment-005/result.json
+            artifacts/experiment-005/
             artifacts/abnormal-action-residuals/manifest.json
           if-no-files-found: warn
