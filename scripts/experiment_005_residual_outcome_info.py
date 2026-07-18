@@ -31,6 +31,16 @@ def safe_std(series: pd.Series) -> float:
     return value if np.isfinite(value) else 0.0
 
 
+def mean_or_zero(series: pd.Series) -> float:
+    numeric = pd.to_numeric(series, errors="coerce")
+    return float(numeric.mean()) if numeric.notna().any() else 0.0
+
+
+def max_or_zero(series: pd.Series) -> float:
+    numeric = pd.to_numeric(series, errors="coerce")
+    return float(numeric.max()) if numeric.notna().any() else 0.0
+
+
 def aggregate_residual_file(path: Path) -> tuple[pd.DataFrame, dict[str, Any]]:
     frame = pd.read_csv(path, compression="gzip", low_memory=False)
     forbidden = [column for column in frame.columns if column.casefold() in {"score_home", "score_away", "result", "ftr"}]
@@ -99,15 +109,15 @@ def aggregate_residual_file(path: Path) -> tuple[pd.DataFrame, dict[str, Any]]:
             "move_surprise_std": safe_std(group["move_surprise_signed"]),
             "move_surprise_sum": float(group["move_surprise_signed"].sum()),
             "move_surprise_max_abs": float(group["move_surprise_abs"].max()),
-            "no_move_surprise_mean": float(group["no_move_surprise"].mean()),
-            "no_move_surprise_max": float(group["no_move_surprise"].max()),
-            "unexpected_move_surprise_mean": float(group["unexpected_move_surprise"].mean()),
-            "unexpected_move_surprise_max": float(group["unexpected_move_surprise"].max()),
+            "no_move_surprise_mean": mean_or_zero(group["no_move_surprise"]),
+            "no_move_surprise_max": max_or_zero(group["no_move_surprise"]),
+            "unexpected_move_surprise_mean": mean_or_zero(group["unexpected_move_surprise"]),
+            "unexpected_move_surprise_max": max_or_zero(group["unexpected_move_surprise"]),
             "action_residual_l2_mean": float(group["action_residual_l2"].mean()),
             "action_residual_l2_std": safe_std(group["action_residual_l2"]),
             "action_residual_l2_max": float(group["action_residual_l2"].max()),
-            "conditional_residual_l2_mean": float(group["conditional_residual_l2"].mean()) if group["conditional_residual_l2"].notna().any() else 0.0,
-            "conditional_residual_l2_max": float(group["conditional_residual_l2"].max()) if group["conditional_residual_l2"].notna().any() else 0.0,
+            "conditional_residual_l2_mean": mean_or_zero(group["conditional_residual_l2"]),
+            "conditional_residual_l2_max": max_or_zero(group["conditional_residual_l2"]),
             "consensus_gap_l2_mean": float(group["consensus_gap_l2"].mean()),
             "prior_residual_cutoffs_mean": float(group["prior_residual_cutoffs"].mean()),
             "prior_move_surprise_mean_mean": float(group["prior_move_surprise_mean"].fillna(0.0).mean()),
@@ -128,7 +138,7 @@ def aggregate_residual_file(path: Path) -> tuple[pd.DataFrame, dict[str, Any]]:
             record[f"action_residual_{outcome}_sum"] = float(action.sum())
             record[f"action_residual_{outcome}_max_abs"] = float(action.abs().max())
             record[f"action_residual_{outcome}_positive_fraction"] = float((action > 0.0).mean())
-            record[f"conditional_residual_{outcome}_mean"] = float(conditional.mean()) if conditional.notna().any() else 0.0
+            record[f"conditional_residual_{outcome}_mean"] = mean_or_zero(conditional)
             record[f"prior_action_residual_{outcome}_sum_mean"] = float(
                 pd.to_numeric(group[f"prior_action_residual_{outcome}_sum"], errors="coerce").fillna(0.0).mean()
             )
@@ -163,6 +173,7 @@ def aggregate_residual_file(path: Path) -> tuple[pd.DataFrame, dict[str, Any]]:
         "aggregated_unique_matches": int(aggregated["match_id"].nunique()),
         "rows_by_cutoff": {f"T-{int(k)}h": int(v) for k, v in aggregated["hours_before_kickoff"].value_counts().sort_index(ascending=False).items()},
         "minimum_books": MIN_BOOKS,
+        "structurally_absent_conditional_aggregates_filled_with_zero": True,
     }
     return aggregated, profile
 
@@ -425,6 +436,9 @@ def main() -> None:
             "paired_match_bootstrap": bootstrap,
             "cutoff_improvements": cutoff_improvements,
             "improved_cutoffs": improved_cutoffs,
+            "direct_market_by_cutoff": direct_by_cutoff,
+            "fitted_market_by_cutoff": baseline_by_cutoff,
+            "augmented_by_cutoff": augmented_by_cutoff,
         },
         "promotion_checks": checks,
         "residual_outcome_information_promoted": all(checks.values()),
