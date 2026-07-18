@@ -17,4 +17,19 @@ jobs:
           python-version: "3.11"
           cache: pip
       - run: python -m pip install -e ".[dev]"
-      - run: pytest tests/test_availability.py -vv
+      - name: Run focused tests
+        shell: bash
+        run: |
+          mkdir -p artifacts
+          set +e
+          pytest tests/test_availability.py -vv > artifacts/availability-test.txt 2>&1
+          code=$?
+          cat artifacts/availability-test.txt
+          exit $code
+      - name: Upload focused test output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: availability-test-output
+          path: artifacts/availability-test.txt
+          if-no-files-found: error
