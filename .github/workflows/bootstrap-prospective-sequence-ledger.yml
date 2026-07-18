@@ -5,6 +5,12 @@ on:
     paths:
       - ".bootstrap/**"
       - ".github/workflows/bootstrap-prospective-sequence-ledger.yml"
+  push:
+    branches:
+      - "prospective-sequence-ledger"
+    paths:
+      - ".bootstrap/**"
+      - ".github/workflows/bootstrap-prospective-sequence-ledger.yml"
 
 permissions:
   contents: write
@@ -15,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
+          ref: ${{ github.head_ref || github.ref_name }}
           fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
@@ -88,6 +94,7 @@ This phase creates collection and target infrastructure only. It does not score 
       - name: Commit materialized implementation
         shell: bash
         run: |
+          branch="${{ github.head_ref || github.ref_name }}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add src/marketlab/prospective_sequences.py scripts/build_prospective_sequence_ledger.py tests/test_prospective_sequences.py docs/PROSPECTIVE_SEQUENCE_LEDGER.md pyproject.toml
@@ -96,6 +103,4 @@ This phase creates collection and target infrastructure only. It does not score 
             exit 0
           fi
           git commit -m "Build prospective odds sequence ledger"
-          git push origin HEAD:${{ github.head_ref }}
-
-# One-shot bootstrap: remove after the generated source commit is verified.
+          git push origin HEAD:"$branch"
