@@ -94,11 +94,35 @@ def reconstruct_states(odds_path: Path) -> pd.DataFrame:
 
 
 def split_label(kickoff: pd.Series) -> np.ndarray:
-    dates = pd.to_datetime(kickoff)
-    out = np.full(len(dates), "test", dtype=object)
-    out[dates <= pd.Timestamp("2017-10-31 23:59:59")] = "train"
-    out[(dates >= pd.Timestamp("2017-11-01")) & (dates <= pd.Timestamp("2017-12-31 23:59:59"))] = "validation"
-    return out
+    dates = pd.to_datetime(kickoff, errors="raise").to_numpy(dtype="datetime64[ns]")
+    train_end = np.datetime64("2017-10-31T23:59:59", "ns")
+    validation_start = np.datetime64("2017-11-01T00:00:00", "ns")
+    validation_end = np.datetime64("2017-12-31T23:59:59", "ns")
+    return np.where(
+        dates <= train_end,
+        "train",
+        np.where((dates >= validation_start) & (dates <= validation_end), "validation", "test"),
+    ).astype(object)
+
+
+def split_profile(states: pd.DataFrame) -> dict[str, Any]:
+    output: dict[str, Any] = {}
+    for split, group in states.groupby("split", sort=True):
+        output[str(split)] = {
+            "states": int(len(group)),
+            "matches": int(group["match_id"].nunique()),
+            "moves": int(group["y"].sum()),
+            "move_rate": float(group["y"].mean()),
+            "by_cutoff": {
+                f"T-{int(hours)}h": {
+                    "states": int(len(cutoff_group)),
+                    "moves": int(cutoff_group["y"].sum()),
+                    "move_rate": float(cutoff_group["y"].mean()),
+                }
+                for hours, cutoff_group in group.groupby("hours", sort=False)
+            },
+        }
+    return output
 
 
 def baseline_rates(train: pd.DataFrame) -> dict[int, float]:
@@ -161,7 +185,14 @@ def main() -> None:
     with zipfile.ZipFile(archive) as zf: zf.extractall(extracted)
     states = reconstruct_states(extracted / "Matches_Odds.csv")
     states["split"] = split_label(states["kickoff"])
+    profile = split_profile(states)
+    (root / "state_profile.json").write_text(json.dumps(profile, indent=2, sort_keys=True), encoding="utf-8")
     train, val, test = (states[states["split"] == label].copy() for label in ("train", "validation", "test"))
+    for label, frame in (("train", train), ("validation", val), ("test", test)):
+        if frame.empty:
+            raise RuntimeError(f"empty split: {label}; inspect state_profile.json")
+        if len(np.unique(frame["y"].to_numpy(dtype=int))) < 2:
+            raise RuntimeError(f"split {label} contains one target class; inspect state_profile.json")
     feature_cols = ["cur_h","cur_d","cur_a","prev_h","prev_d","prev_a","delta_h","delta_d","delta_a","overround","prev_overround","overround_delta","hours_since_last_update","updates_1h","updates_6h","updates_24h","hours_scaled"]
     rates = baseline_rates(train)
     logistic = make_pipeline(StandardScaler(), LogisticRegression(C=1.0, max_iter=250, solver="lbfgs"))
@@ -175,7 +206,7 @@ def main() -> None:
             p = predictor(frame[feature_cols]); base = predict_baseline(frame, rates)
             splits[label] = evaluate(frame, p, base)
         results.append({"model": name, "splits": splits, "replication_supported": splits["test"]["replication_supported"]})
-    report = {"experiment":"004_independent_exact_timestamp_hazard", "archive":archive_meta, "state_rows":int(len(states)), "unique_matches":int(states["match_id"].nunique()), "split_counts":{k:int(v) for k,v in states["split"].value_counts().items()}, "training_baseline_rates":{f"T-{k}h":v for k,v in rates.items()}, "models":results, "any_replication_supported":any(r["replication_supported"] for r in results)}
+    report = {"experiment":"004_independent_exact_timestamp_hazard", "archive":archive_meta, "state_rows":int(len(states)), "unique_matches":int(states["match_id"].nunique()), "split_profile":profile, "training_baseline_rates":{f"T-{k}h":v for k,v in rates.items()}, "models":results, "any_replication_supported":any(r["replication_supported"] for r in results)}
     (root/"result.json").write_text(json.dumps(report, indent=2, sort_keys=True), encoding="utf-8")
     print(json.dumps(report, indent=2))
 
