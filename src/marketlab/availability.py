@@ -46,7 +46,7 @@ POSTMATCH_OUTCOME_COLUMNS = {
     "AG",
 }
 
-POSTMATCH_STATS_PREFIXES = {
+POSTMATCH_STATS_COLUMNS = {
     "HS",
     "AS",
     "HST",
@@ -61,52 +61,79 @@ POSTMATCH_STATS_PREFIXES = {
     "AR",
 }
 
+# Known Football-Data bookmaker/aggregate prefixes. Matching is prefix-aware rather
+# than arbitrary substring matching so ordinary future columns cannot accidentally
+# become approved market fields just because they contain a short provider code.
+MARKET_PREFIXES = (
+    "B365",
+    "P",
+    "PS",
+    "PIN",
+    "WH",
+    "BW",
+    "IW",
+    "VC",
+    "LB",
+    "GB",
+    "SB",
+    "SJ",
+    "BS",
+    "SO",
+    "SY",
+    "MAX",
+    "AVG",
+    "BBAV",
+    "BBMX",
+)
+
+MARKET_SUFFIXES = {
+    "H",
+    "D",
+    "A",
+    "CH",
+    "CD",
+    "CA",
+    "HH",
+    "HA",
+    "AH",
+    "CAHH",
+    "CAHA",
+    ">2.5",
+    "<2.5",
+    "C>2.5",
+    "C<2.5",
+}
+
+CLOSING_MARKET_SUFFIXES = {
+    "CH",
+    "CD",
+    "CA",
+    "CAHH",
+    "CAHA",
+    "C>2.5",
+    "C<2.5",
+}
+
+
+def _market_parts(column: str) -> tuple[str, str] | None:
+    upper = column.upper()
+    # Longest prefix wins, avoiding P matching PIN/PS.
+    for prefix in sorted(MARKET_PREFIXES, key=len, reverse=True):
+        if not upper.startswith(prefix):
+            continue
+        suffix = upper[len(prefix) :]
+        if suffix in MARKET_SUFFIXES:
+            return prefix, suffix
+    return None
+
 
 def _looks_like_market_column(column: str) -> bool:
-    upper = column.upper()
-    # Football-Data bookmaker/market fields vary substantially by era. This deliberately
-    # errs on the side of classifying ambiguous odds/line fields as market data rather
-    # than silently treating them as ordinary context.
-    tokens = (
-        "B365",
-        "PIN",
-        "PS",
-        "WH",
-        "BW",
-        "IW",
-        "VC",
-        "LB",
-        "GB",
-        "SB",
-        "SJ",
-        "BS",
-        "SO",
-        "SY",
-        "MAX",
-        "AVG",
-        "AH",
-        "OU",
-        ">2.5",
-        "<2.5",
-    )
-    return any(token in upper for token in tokens)
+    return _market_parts(column) is not None
 
 
 def _looks_like_closing_market_column(column: str) -> bool:
-    upper = column.upper()
-    # Recent Football-Data schemas commonly encode closing variants with a C immediately
-    # before the H/D/A or line/price suffix (e.g. AvgCH, B365CA, PCA). We keep the rule
-    # intentionally narrow; uncertain fields remain UNKNOWN or first-set market data.
-    closing_suffixes = (
-        "CH",
-        "CD",
-        "CA",
-        "CAHH",
-        "CAHA",
-        "C>2.5",
-        "C<2.5",
-    )
-    return any(upper.endswith(suffix) for suffix in closing_suffixes)
+    parts = _market_parts(column)
+    return parts is not None and parts[1] in CLOSING_MARKET_SUFFIXES
 
 
 def classify_football_data_column(column: str) -> AvailabilityDecision:
@@ -126,7 +153,7 @@ def classify_football_data_column(column: str) -> AvailabilityDecision:
             reason="match result or score is known only after/during the match",
         )
 
-    if column in POSTMATCH_STATS_PREFIXES:
+    if column in POSTMATCH_STATS_COLUMNS:
         return AvailabilityDecision(
             column=column,
             availability=AvailabilityClass.POSTMATCH_STATS,
@@ -166,7 +193,8 @@ def classify_football_data_column(column: str) -> AvailabilityDecision:
 
 
 def assert_default_prematch_safe(columns: list[str] | tuple[str, ...] | set[str]) -> None:
-    unsafe = [classify_football_data_column(column) for column in columns if not classify_football_data_column(column).default_prematch_safe]
+    decisions = [classify_football_data_column(column) for column in columns]
+    unsafe = [decision for decision in decisions if not decision.default_prematch_safe]
     if unsafe:
         summary = ", ".join(f"{item.column}:{item.availability}" for item in unsafe[:20])
         extra = "" if len(unsafe) <= 20 else f" (+{len(unsafe) - 20} more)"
