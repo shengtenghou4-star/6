@@ -71,21 +71,20 @@ def profile_csv_stream(fh: TextIO, *, sample_rows: int = 5) -> dict[str, Any]:
 
 def profile_file(path: Path) -> dict[str, Any]:
     name = path.name.casefold()
+    suffix = path.suffix.casefold()
     if name.endswith(".csv.gz"):
         with gzip.open(path, "rt", encoding="utf-8-sig", errors="replace", newline="") as fh:
             return {"type": "csv.gz", **profile_csv_stream(fh)}
-    if path.suffix.casefold() == ".csv":
+    if suffix == ".csv":
         with path.open("r", encoding="utf-8-sig", errors="replace", newline="") as fh:
             return {"type": "csv", **profile_csv_stream(fh)}
-    if path.suffix.casefold() == ".json":
+    if suffix == ".json":
         payload = json.loads(path.read_text(encoding="utf-8-sig"))
-        return {
-            "type": "json",
-            "root_type": type(payload).__name__,
-            "records": len(payload) if isinstance(payload, (list, dict)) else None,
-            "sample": payload[:3] if isinstance(payload, list) else None,
-        }
-    return {"type": path.suffix.casefold().lstrip(".") or "other", "profile_supported": False}
+        return {"type": "json", "root_type": type(payload).__name__, "records": len(payload) if isinstance(payload, (list, dict)) else None, "sample": payload[:3] if isinstance(payload, list) else None}
+    if suffix in {".md", ".txt"}:
+        text = path.read_text(encoding="utf-8", errors="replace")
+        return {"type": suffix.lstrip("."), "characters": len(text), "text": text[:50_000]}
+    return {"type": suffix.lstrip(".") or "other", "profile_supported": False}
 
 
 def main() -> None:
@@ -108,19 +107,29 @@ def main() -> None:
         extracted.mkdir(parents=True)
         with zipfile.ZipFile(archive) as zf:
             zf.extractall(extracted)
-            zip_members = [
-                {"name": info.filename, "compressed_bytes": info.compress_size, "uncompressed_bytes": info.file_size}
-                for info in zf.infolist() if not info.is_dir()
-            ]
+            zip_members = [{"name": info.filename, "compressed_bytes": info.compress_size, "uncompressed_bytes": info.file_size} for info in zf.infolist() if not info.is_dir()]
 
         files: list[dict[str, Any]] = []
         failures: list[dict[str, str]] = []
+        csv_rows = 0
+        csv_files = 0
+        bookmaker_values: set[str] = set()
+        scope_paths: Counter[tuple[str, str]] = Counter()
         for path in sorted(p for p in extracted.rglob("*") if p.is_file()):
-            item: dict[str, Any] = {"path": str(path.relative_to(extracted)), "bytes": path.stat().st_size}
+            rel = str(path.relative_to(extracted))
+            item: dict[str, Any] = {"path": rel, "bytes": path.stat().st_size}
             try:
-                item["profile"] = profile_file(path)
+                profile = profile_file(path)
+                item["profile"] = profile
+                if profile.get("type") in {"csv", "csv.gz"}:
+                    csv_files += 1
+                    csv_rows += int(profile.get("rows", 0))
+                    bookmaker_values.update(profile.get("distinct_candidate_samples", {}).get("Bookmaker", []))
+                    parts = Path(rel).parts
+                    if len(parts) >= 3 and parts[0] == "sample":
+                        scope_paths[(parts[1], parts[2])] += 1
             except Exception as exc:
-                failures.append({"path": item["path"], "error_type": type(exc).__name__, "error": str(exc)})
+                failures.append({"path": rel, "error_type": type(exc).__name__, "error": str(exc)})
             files.append(item)
 
         manifest = {
@@ -130,9 +139,16 @@ def main() -> None:
             "zip_members": zip_members,
             "files": files,
             "profile_failures": failures,
+            "observed_archive_scope": {
+                "csv_files": csv_files,
+                "csv_rows": csv_rows,
+                "bookmaker_values": sorted(bookmaker_values),
+                "bookmaker_count": len(bookmaker_values),
+                "sample_path_league_season_file_counts": {f"{league}/{season}": count for (league, season), count in sorted(scope_paths.items())},
+            },
         }
         (root / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True), encoding="utf-8")
-        print(json.dumps({"archive_bytes": meta["bytes"], "files": len(files), "profile_failures": len(failures)}, indent=2))
+        print(json.dumps({"archive_bytes": meta["bytes"], "files": len(files), "csv_files": csv_files, "csv_rows": csv_rows, "bookmakers": len(bookmaker_values), "profile_failures": len(failures)}, indent=2))
         if failures:
             raise RuntimeError(f"profile failures detected: {len(failures)}")
         failure_path.unlink(missing_ok=True)
