@@ -369,7 +369,7 @@ def main() -> None:
     baseline_model.fit(validation[baseline_columns], validation["outcome_class"])
     augmented_model.fit(validation[augmented_columns], validation["outcome_class"])
 
-    direct_market = test[[f"market_next_{outcome}_p" for outcome in OUTCOMES]].to_numpy(dtype=np.float64)
+    direct_market = test[[f"market_next_{outcome}_p" for outcome in OUTCOMES]].to_numpy(dtype=np.float64, copy=True)
     direct_market /= direct_market.sum(axis=1, keepdims=True)
     fitted_baseline = aligned_probabilities(baseline_model, test[baseline_columns])
     augmented = aligned_probabilities(augmented_model, test[augmented_columns])
