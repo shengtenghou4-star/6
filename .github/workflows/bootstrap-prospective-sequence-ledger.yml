@@ -1,0 +1,99 @@
+name: Bootstrap Prospective Sequence Ledger
+
+on:
+  pull_request:
+    paths:
+      - ".bootstrap/**"
+      - ".github/workflows/bootstrap-prospective-sequence-ledger.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Materialize staged source files
+        shell: bash
+        run: |
+          python - <<'PY'
+          from __future__ import annotations
+          import base64
+          import gzip
+          from pathlib import Path
+
+          payloads = {
+              Path(".bootstrap/prospective_sequences.py.gz.b64"): Path("src/marketlab/prospective_sequences.py"),
+              Path(".bootstrap/test_prospective_sequences.py.gz.b64"): Path("tests/test_prospective_sequences.py"),
+              Path(".bootstrap/build_prospective_sequence_ledger.py.gz.b64"): Path("scripts/build_prospective_sequence_ledger.py"),
+          }
+          for encoded, target in payloads.items():
+              target.parent.mkdir(parents=True, exist_ok=True)
+              target.write_bytes(gzip.decompress(base64.b64decode(encoded.read_text(encoding="ascii"))))
+
+          pyproject = Path("pyproject.toml")
+          text = pyproject.read_text(encoding="utf-8")
+          anchor = '  "requests>=2.32,<3",\n'
+          additions = '  "numpy>=1.26,<3",\n  "pandas>=2.2,<3",\n'
+          if '"pandas>=2.2,<3"' not in text:
+              if anchor not in text:
+                  raise RuntimeError("pyproject dependency anchor missing")
+              text = text.replace(anchor, anchor + additions, 1)
+              pyproject.write_text(text, encoding="utf-8")
+
+          doc = Path("docs/PROSPECTIVE_SEQUENCE_LEDGER.md")
+          doc.parent.mkdir(parents=True, exist_ok=True)
+          doc.write_text("""# Prospective odds sequence ledger
+
+This pipeline converts immutable The Odds API snapshots into leakage-safe, outcome-blind market sequences.
+
+## Inputs and integrity
+
+Only snapshot directories containing `manifest.json`, `raw-response.json`, and `normalized-outcomes.csv` are discovered. Every raw response SHA-256 and normalized row count is verified against its manifest. Duplicate snapshot identities and non-increasing ingestion timestamps fail closed.
+
+## Derived artifacts
+
+- `quote-ledger.csv.gz`: one complete H/D/A state per snapshot, event, bookmaker and market, with raw odds, de-vigged probabilities, overround, provider update timestamps, quote-change flags, time to event and cross-book consensus excluding the target bookmaker.
+- `consecutive-transitions.csv.gz`: target-book move/no-move and probability deltas between consecutive observed states, with peer-book movement fraction and complete snapshot provenance.
+- `closing-targets.csv.gz`: every strictly pre-commence observation joined to the same bookmaker's final valid strictly pre-commence state, including H/D/A fair-probability movement and raw log-odds closing-line value.
+- `manifest.json`: deterministic row counts, diagnostics, hashes and explicit outcome-blind policy.
+
+Post-commence states may remain visible in the quote ledger for audit diagnostics, but they are never eligible as closing observations or closing targets. Incomplete, ambiguous or invalid quote groups are counted and excluded rather than repaired.
+
+## Usage
+
+```bash
+python scripts/build_prospective_sequence_ledger.py \
+  --snapshots-root artifacts/prospective-odds \
+  --output-root artifacts/prospective-sequences \
+  --market h2h \
+  --minimum-other-books 3
+```
+
+This phase creates collection and target infrastructure only. It does not score residuals, use match outcomes, or claim alpha, execution quality or profit.
+""", encoding="utf-8")
+          PY
+      - name: Install and test
+        run: |
+          python -m pip install -e .
+          python -m pip install pytest
+          pytest -q
+      - name: Commit materialized implementation
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/marketlab/prospective_sequences.py scripts/build_prospective_sequence_ledger.py tests/test_prospective_sequences.py docs/PROSPECTIVE_SEQUENCE_LEDGER.md pyproject.toml
+          if git diff --cached --quiet; then
+            echo "No materialized changes"
+            exit 0
+          fi
+          git commit -m "Build prospective odds sequence ledger"
+          git push origin HEAD:${{ github.head_ref }}
