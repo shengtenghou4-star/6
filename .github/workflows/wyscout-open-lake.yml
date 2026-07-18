@@ -1,0 +1,29 @@
+name: Wyscout Open Lake
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "scripts/backfill_wyscout_figshare.py"
+      - ".github/workflows/wyscout-open-lake.yml"
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: python -m pip install -e .
+      - name: Acquire and profile public Wyscout-derived Figshare collection
+        run: python scripts/backfill_wyscout_figshare.py --output-root artifacts/wyscout-open
+      - name: Upload manifest evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wyscout-open-lake-evidence
+          path: artifacts/wyscout-open/manifest.json
+          if-no-files-found: warn
