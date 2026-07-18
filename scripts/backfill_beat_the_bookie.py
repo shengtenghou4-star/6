@@ -2,13 +2,15 @@ from __future__ import annotations
 
 import argparse
 import csv
+import gzip
 import hashlib
 import json
 import shutil
 import sqlite3
 import zipfile
+from collections import Counter
 from pathlib import Path
-from typing import Any
+from typing import Any, TextIO
 
 import requests
 
@@ -35,12 +37,70 @@ def download(url: str, path: Path, *, timeout: float = 600.0) -> dict[str, Any]:
     return {"bytes": total, "sha256": digest.hexdigest(), "final_url": str(response.url)}
 
 
+def profile_csv_stream(fh: TextIO, *, sample_rows: int = 3) -> dict[str, Any]:
+    reader = csv.DictReader(fh)
+    header = list(reader.fieldnames or [])
+    rows = 0
+    samples: list[dict[str, str]] = []
+    nonempty = Counter()
+    distinct_candidates: dict[str, set[str]] = {
+        key: set()
+        for key in header
+        if key.casefold() in {
+            "match_id", "matchid", "fixture_id", "fixtureid", "league", "league_id", "leagueid",
+            "bookmaker", "bookmaker_id", "bookmakerid", "provider", "provider_id", "providerid",
+            "market", "market_id", "marketid", "selection", "outcome", "timestamp", "time", "date",
+        }
+    }
+    minmax_candidates: dict[str, list[str | None]] = {
+        key: [None, None]
+        for key in header
+        if any(token in key.casefold() for token in ("time", "date", "timestamp"))
+    }
+
+    for row in reader:
+        rows += 1
+        if len(samples) < sample_rows:
+            samples.append({key: str(value)[:300] if value is not None else "" for key, value in row.items() if key is not None})
+        for key, value in row.items():
+            if key is None or value in (None, ""):
+                continue
+            text = str(value)
+            nonempty[key] += 1
+            bucket = distinct_candidates.get(key)
+            if bucket is not None and len(bucket) < 200_000:
+                bucket.add(text)
+            minmax = minmax_candidates.get(key)
+            if minmax is not None:
+                if minmax[0] is None or text < minmax[0]:
+                    minmax[0] = text
+                if minmax[1] is None or text > minmax[1]:
+                    minmax[1] = text
+
+    return {
+        "type": "csv",
+        "rows": rows,
+        "columns": header,
+        "column_count": len(header),
+        "sample_rows": samples,
+        "nonempty_by_column": dict(sorted(nonempty.items())),
+        "distinct_candidate_counts": {key: len(values) for key, values in sorted(distinct_candidates.items())},
+        "lexical_minmax_time_like_columns": {
+            key: {"min": values[0], "max": values[1]} for key, values in sorted(minmax_candidates.items())
+        },
+    }
+
+
 def count_csv(path: Path) -> dict[str, Any]:
     with path.open("r", encoding="utf-8-sig", errors="replace", newline="") as fh:
-        reader = csv.reader(fh)
-        header = next(reader, [])
-        rows = sum(1 for _ in reader)
-    return {"type": "csv", "rows": rows, "columns": header, "column_count": len(header)}
+        return profile_csv_stream(fh)
+
+
+def count_csv_gz(path: Path) -> dict[str, Any]:
+    with gzip.open(path, "rt", encoding="utf-8-sig", errors="replace", newline="") as fh:
+        profile = profile_csv_stream(fh)
+    profile["type"] = "csv.gz"
+    return profile
 
 
 def profile_sqlite(path: Path) -> dict[str, Any]:
@@ -65,8 +125,11 @@ def profile_extracted(root: Path) -> dict[str, Any]:
         rel = str(path.relative_to(root))
         item: dict[str, Any] = {"path": rel, "bytes": path.stat().st_size}
         try:
+            lower_name = path.name.casefold()
             suffix = path.suffix.casefold()
-            if suffix == ".csv":
+            if lower_name.endswith(".csv.gz"):
+                item["profile"] = count_csv_gz(path)
+            elif suffix == ".csv":
                 item["profile"] = count_csv(path)
             elif suffix in {".sqlite", ".sqlite3", ".db"}:
                 item["profile"] = profile_sqlite(path)
