@@ -8,7 +8,11 @@ import requests
 
 
 BASE_URL = "https://api.the-odds-api.com/v4"
-PUBLIC_EPL_SAMPLE_URL = "https://public-odds-api-sample-data.s3.amazonaws.com/historical-epl.json"
+PUBLIC_SAMPLE_URLS = {
+    "epl_2021": "https://public-odds-api-sample-data.s3.amazonaws.com/historical-epl.json",
+    "bundesliga_2022": "https://public-odds-api-sample-data.s3.amazonaws.com/historical-bundesliga.json",
+}
+PUBLIC_EPL_SAMPLE_URL = PUBLIC_SAMPLE_URLS["epl_2021"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -38,16 +42,29 @@ def _validate_historical_payload(payload: Any) -> dict[str, Any]:
     return payload
 
 
+def fetch_public_sample(
+    sample_key: str,
+    *,
+    timeout: float = 30.0,
+    session: requests.Session | None = None,
+) -> dict[str, Any]:
+    try:
+        url = PUBLIC_SAMPLE_URLS[sample_key]
+    except KeyError as exc:
+        raise ValueError(f"unknown official public sample: {sample_key}") from exc
+    client = session or requests.Session()
+    response = client.get(url, timeout=timeout)
+    response.raise_for_status()
+    return _validate_historical_payload(response.json())
+
+
 def fetch_public_epl_sample(
     *,
     timeout: float = 30.0,
     session: requests.Session | None = None,
 ) -> dict[str, Any]:
-    """Fetch The Odds API's official public historical EPL sample without credentials."""
-    client = session or requests.Session()
-    response = client.get(PUBLIC_EPL_SAMPLE_URL, timeout=timeout)
-    response.raise_for_status()
-    return _validate_historical_payload(response.json())
+    """Backwards-compatible helper for the official historical EPL sample."""
+    return fetch_public_sample("epl_2021", timeout=timeout, session=session)
 
 
 def fetch_historical_snapshot(
