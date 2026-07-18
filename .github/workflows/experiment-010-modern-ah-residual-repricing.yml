@@ -5,6 +5,7 @@ on:
   pull_request:
     paths:
       - "scripts/experiment_010_modern_ah_residual_repricing.py"
+      - "scripts/run_experiment_010_modern_ah.py"
       - "docs/EXPERIMENT_010_PROTOCOL.md"
       - ".github/workflows/experiment-010-modern-ah-residual-repricing.yml"
 
@@ -25,7 +26,7 @@ jobs:
         run: |
           set -o pipefail
           mkdir -p artifacts/experiment-010
-          python scripts/experiment_010_modern_ah_residual_repricing.py \
+          python scripts/run_experiment_010_modern_ah.py \
             --output-root artifacts/experiment-010 \
             2>&1 | tee artifacts/experiment-010/run.log
       - name: Upload result evidence
