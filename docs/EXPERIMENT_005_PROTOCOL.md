@@ -88,7 +88,7 @@ The augmented model receives exactly the same market/cutoff features plus:
 - prior abnormality mean
 - mean prior cumulative H/D/A action residual
 
-Undefined mover-conditional aggregates are set to zero; mover fraction remains present so zero is distinguishable from observed mover averages.
+Structurally undefined conditional aggregates are set to zero: mover-conditional values when no selected book moved, no-move-surprise values when every selected book moved, and unexpected-move-surprise values when no selected book moved. Mover fraction remains present, so these zeros are distinguishable from observed conditional averages. This deterministic missingness rule was frozen after the first execution failed its non-finite feature gate and before any outcome model or locked-test metric was produced.
 
 Fixed augmented model: the same scaler/logistic architecture and `C=1.0` as the market-only baseline.
 
