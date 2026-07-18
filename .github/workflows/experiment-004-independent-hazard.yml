@@ -28,3 +28,5 @@ jobs:
           name: experiment-004-independent-hazard
           path: artifacts/experiment-004/result.json
           if-no-files-found: warn
+
+# Workflow trigger retained intentionally for independent replication.
