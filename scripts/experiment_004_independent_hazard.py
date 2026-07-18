@@ -54,8 +54,8 @@ def reconstruct_states(odds_path: Path) -> pd.DataFrame:
 
     records: list[dict[str, Any]] = []
     for match_id, group in df.groupby("match_id", sort=False):
-        start = group["date_start"].iloc[0]
-        times_ns = group["date_created"].astype("int64").to_numpy()
+        start = pd.Timestamp(group["date_start"].iloc[0]).as_unit("ns")
+        times_ns = group["date_created"].to_numpy(dtype="datetime64[ns]").astype(np.int64)
         odds = group[["home_team_odd", "tie_odd", "away_team_odd"]].to_numpy(dtype=float)
         if len(times_ns) == 0: continue
 
@@ -78,7 +78,7 @@ def reconstruct_states(odds_path: Path) -> pd.DataFrame:
                 right = np.searchsorted(times_ns, current_t.value, side="right")
                 return int(max(0, right - left))
 
-            last_update_hours = max(0.0, (current_t - pd.Timestamp(times_ns[current_idx])).total_seconds() / 3600.0)
+            last_update_hours = max(0.0, (current_t - pd.Timestamp(times_ns[current_idx], unit="ns")).total_seconds() / 3600.0)
             rec = {
                 "match_id": str(match_id), "kickoff": start, "hours": hours, "y": y_move,
                 "cur_h": current_p[0], "cur_d": current_p[1], "cur_a": current_p[2],
