@@ -40,21 +40,30 @@ Evidence:
 
 Betfair provides timestamped Exchange history from April 2015. It is best viewed as a market-microstructure source rather than a multi-bookmaker replacement.
 
+The historical stack has three useful tiers:
+
+- **Basic:** free tier, approximately 1-minute price states / last traded price, no full volume ladder. Requires a Betfair account and the data still has to be added to `My Data` before download.
+- **Advanced:** approximately 1-second granularity, top-of-book/limited ladder plus volume fields.
+- **Pro:** API-tick-style granularity (documented around 50ms), full price ladder plus volume.
+
 Official bulk pricing published for soccer (verify again before purchase):
 
 - Advanced: £69/month; 12-month bulk package £699
 - Pro: £230/month; 12-month bulk package £2,299
 
-Acquisition strategy:
+### Acquisition strategy
 
-1. Obtain the smallest practical soccer sample/month first.
-2. Measure whether Advanced already contains sufficient price/volume state for our research questions.
-3. Buy Pro only if order-book depth fields materially improve experiments.
-4. Do not buy many years before entity joins and parser correctness are proven.
+1. **Exploit Basic first.** It is free and may already be sufficient to test whether Exchange price dynamics add signal.
+2. Build and validate the parser/entity join on Basic before paying for higher-frequency data.
+3. Upgrade a narrow month to Advanced only if one-minute last-traded-price data loses information relevant to the anomaly hypothesis.
+4. Buy Pro only if full depth/tick-level fields produce measurable incremental value over Advanced.
+5. Do not buy many years before join quality and experiment value are proven.
 
 Evidence:
 - https://support.developer.betfair.com/hc/en-us/articles/360002407732-What-data-is-provided-by-the-Historical-Data-service
 - https://support.developer.betfair.com/hc/en-us/articles/360019984158-Are-bulk-purchase-discounts-available
+- https://betfair-datascientists.github.io/data/usingHistoricDataSite/
+- https://github.com/betfair/historic-data-workbook
 
 ## 3. TxODDS / Tx LAB
 
@@ -97,9 +106,10 @@ Evidence:
 ## 5. Recommended acquisition order (current, revisable)
 
 1. Free/public baselines first: Football-Data + StatsBomb Open Data for pipeline and entity experiments.
-2. Obtain official The Odds API public historical samples and then a small paid historical test if needed.
-3. Obtain a narrow Betfair historical package/sample for exchange microstructure.
+2. Add **Betfair Basic** early because it is a free historical microstructure baseline at roughly one-minute granularity.
+3. Use official The Odds API public historical samples, then buy only a small historical plan if multi-bookmaker continuity warrants it.
 4. Request Tx LAB sample/quote because it may replace a large amount of piecemeal retrospective acquisition.
-5. Select a broad prospective feed and begin permanent self-archiving as early as practical.
+5. Upgrade Betfair to Advanced/Pro only after measured incremental-value tests.
+6. Select a broad prospective feed and begin permanent self-archiving as early as practical.
 
 No source is mandatory. If a cheaper or higher-fidelity source appears, replace the stack rather than defending sunk-cost decisions.
