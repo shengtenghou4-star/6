@@ -1,0 +1,29 @@
+name: StatsBomb Open Lake
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "scripts/backfill_statsbomb_open.py"
+      - ".github/workflows/statsbomb-open-lake.yml"
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install
+        run: python -m pip install -e .
+      - name: Acquire and profile StatsBomb Open Data
+        run: python scripts/backfill_statsbomb_open.py --output-root artifacts/statsbomb-open --min-matches 1000
+      - name: Upload event-lake evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: statsbomb-open-lake
+          path: artifacts/statsbomb-open
+          if-no-files-found: error
