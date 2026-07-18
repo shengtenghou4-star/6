@@ -1,0 +1,37 @@
+name: Experiment 006 Independent Residual Outcome
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "scripts/experiment_006_independent_residual_outcome.py"
+      - "docs/EXPERIMENT_006_PROTOCOL.md"
+      - ".github/workflows/experiment-006-independent-residual-outcome.yml"
+
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install
+        run: python -m pip install -e . pandas numpy scikit-learn
+      - name: Run frozen independent residual experiment
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p artifacts/experiment-006
+          python scripts/experiment_006_independent_residual_outcome.py \
+            --output-root artifacts/experiment-006 \
+            2>&1 | tee artifacts/experiment-006/run.log
+      - name: Upload result evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-006-independent-residual-outcome
+          path: artifacts/experiment-006/
+          if-no-files-found: warn
