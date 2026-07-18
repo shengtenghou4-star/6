@@ -38,7 +38,17 @@ Each time-series file has 6,917 columns:
 - outcomes are `home`, `draw`, `away`
 - time indices are `0` through `71`
 
-The files themselves use anonymized bookmaker slot identifiers rather than named bookmaker identities. This is a material limitation for named-bookmaker intent studies, but still directly supports research on conditional cross-book behavior, consensus, response patterns and anomaly residuals.
+### Semantics correction after primary-source audit
+
+The wide files themselves use compact `b1`–`b32` slot identifiers, but the original authors' public generator/unpacker code provides the fixed historical bookmaker mapping. Therefore the slots are **source-mappable**, not permanently anonymous. The mapping is frozen in `docs/BEAT_SOURCE_SEMANTICS.md`.
+
+The original generator also verifies the time direction:
+
+- index 0 ≈ T-71h
+- index 71 ≈ T-0h / kickoff marker
+- `hours_before_kickoff = 71 - time_index`
+
+This correction supersedes the earlier provisional statement that slot identity and time-index direction were unresolved.
 
 Companion match metadata:
 
@@ -47,12 +57,10 @@ Companion match metadata:
 
 The metadata universe is larger than the subset with usable odds-series rows, so joins must remain explicit and no missing-odds matches may be silently fabricated.
 
-## Important protocol constraint
-
-The 72 columns are an indexed historical sequence. Before a chronological model interprets index direction as exact hours-to-kickoff, the mapping/order must be verified against source documentation/paper semantics and then frozen in the experiment protocol. Do not infer time direction from column names alone.
-
 ## Research significance
 
-This is the first actually acquired multi-bookmaker historical trajectory dataset in the project. It is older and hourly/indexed rather than modern five-minute/tick data, and bookmakers are anonymized, so it does not complete the high-resolution market-data gate. It is sufficient to build and falsify the first serious normal-market-behavior/residual pipeline before purchasing modern data.
+This is the first actually acquired multi-bookmaker historical trajectory dataset in the project. It is older and hourly/indexed rather than modern five-minute/tick data, so it does not by itself complete the modern high-resolution market-data gate. It is sufficient to build and falsify the first serious normal-market-behavior/residual pipeline.
+
+The original authors' SQL schema is still strategically preferable if recoverable because it preserves named bookmakers and exact `odds_datetime` updates before hourly sampling.
 
 Workflow artifact digest: `sha256:4c25a976fe59d4daa8c7b38c14591ef09ac0954921164cb42a8cf762494409e9`.
