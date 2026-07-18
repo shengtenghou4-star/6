@@ -36,3 +36,5 @@ jobs:
             artifacts/abnormal-action-residuals/residuals_validation.csv.gz
             artifacts/abnormal-action-residuals/residuals_test.csv.gz
           if-no-files-found: warn
+
+# Workflow trigger retained intentionally for frozen residual generation.
