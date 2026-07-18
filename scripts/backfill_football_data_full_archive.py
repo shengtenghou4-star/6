@@ -73,12 +73,29 @@ def extract_valid_csvs(season: str, archive: bytes) -> tuple[list[dict[str, str]
             division = Path(filename).stem
             try:
                 content = zf.read(info)
-                rows = parse_csv_bytes(content)
-                if not rows:
+                parsed_rows = parse_csv_bytes(content)
+                if not parsed_rows:
                     raise ValueError("zero parsed rows")
-                sample_keys = set().union(*(row.keys() for row in rows[: min(10, len(rows))]))
+                sample_keys = set().union(*(row.keys() for row in parsed_rows[: min(10, len(parsed_rows))]))
                 if not {"HomeTeam", "AwayTeam"}.issubset(sample_keys):
                     raise ValueError("missing HomeTeam/AwayTeam columns")
+
+                rows: list[dict[str, str]] = []
+                rejected_non_match_rows = 0
+                for row in parsed_rows:
+                    home = (row.get("HomeTeam") or "").strip()
+                    away = (row.get("AwayTeam") or "").strip()
+                    date = (row.get("Date") or "").strip()
+                    # Legacy source files occasionally contain footer/annotation rows with values in
+                    # unrelated columns. They are not matches and must not enter the bronze match table.
+                    if not home or not away or not date:
+                        rejected_non_match_rows += 1
+                        continue
+                    rows.append(row)
+
+                if not rows:
+                    raise ValueError("zero valid match rows after identity filtering")
+
                 nonempty = Counter()
                 for row in rows:
                     row["_season"] = season
@@ -95,6 +112,8 @@ def extract_valid_csvs(season: str, archive: bytes) -> tuple[list[dict[str, str]
                         "division": division,
                         "source_file": info.filename,
                         "rows": len(rows),
+                        "parsed_rows_before_identity_filter": len(parsed_rows),
+                        "rejected_non_match_rows": rejected_non_match_rows,
                         "columns": len({key for row in rows for key in row}),
                         "nonempty_columns": dict(sorted(nonempty.items())),
                         "csv_sha256": hashlib.sha256(content).hexdigest(),
@@ -184,6 +203,7 @@ def main() -> None:
     duplicates = duplicate_report(all_rows)
     divisions = sorted({row.get("_division", "") for row in all_rows if row.get("_division")})
     columns = sorted({key for row in all_rows for key in row})
+    rejected_non_match_rows = sum(int(profile.get("rejected_non_match_rows", 0)) for profile in csv_profiles)
 
     report = {
         "requested_seasons": list(args.seasons),
@@ -191,6 +211,7 @@ def main() -> None:
         "failed_or_skipped_items": len(failures),
         "valid_csv_files": len(csv_profiles),
         "rows": len(all_rows),
+        "rejected_non_match_rows": rejected_non_match_rows,
         "divisions": divisions,
         "division_count": len(divisions),
         "unique_columns": len(columns),
@@ -209,6 +230,7 @@ def main() -> None:
                 "successful_archives": len(archives),
                 "valid_csv_files": len(csv_profiles),
                 "rows": len(all_rows),
+                "rejected_non_match_rows": rejected_non_match_rows,
                 "division_count": len(divisions),
                 "unique_columns": len(columns),
                 "duplicate_match_keys": len(duplicates),
