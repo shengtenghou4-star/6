@@ -229,3 +229,4 @@ jobs:
 # The cron may continue to trigger after the campaign window, but the window
 # guard exits before secret use or any paid request. Remove the schedule after
 # Phase 36 is closed.
+# Campaign API bounds intentionally use whole-second UTC timestamps.
