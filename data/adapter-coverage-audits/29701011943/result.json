@@ -1,0 +1,94 @@
+{
+  "adapter_ids": {
+    "canonical_timing": "canonical_cutoff_coverage_normalized_v1",
+    "support_repaired": "support_constrained_coverage_normalized_v1"
+  },
+  "common_activation_utc": "2026-07-19T15:00:00+00:00",
+  "coverage": {
+    "canonical_minus_support_rows": 5,
+    "canonical_share_of_original": 0.8,
+    "support_share_of_original": 0.3
+  },
+  "inputs": {
+    "canonical_timing": {
+      "path": "prospective-data/data/derived/latest/canonical-timing-shadow/canonical-timing-event-candidates.csv.gz",
+      "rows": 8,
+      "sha256": "e62856d044606af95e4be4f800032d947bea57cbc1ba72b3c4fabd945d9760d3"
+    },
+    "original": {
+      "path": "prospective-data/data/derived/latest/shadow/event-shadow-candidates.csv.gz",
+      "rows": 56,
+      "sha256": "aa5928560b5a251ea24de560672e9647d784ce8c95b82ac32421062d3030c77d"
+    },
+    "support_repaired": {
+      "path": "prospective-data/data/derived/latest/support-repaired-shadow/support-repaired-event-candidates.csv.gz",
+      "rows": 3,
+      "sha256": "77fb494718cb8fce9039c3b8d02cb4f1624b2b0f6e7e286efcf9124343b895a4"
+    }
+  },
+  "outcome_blind": true,
+  "pairs": {
+    "original_vs_canonical": {
+      "action_spearman": 0.9285714285714287,
+      "intersection": 8,
+      "jaccard": 0.8,
+      "left_only": 2,
+      "raw_spearman": 1.0,
+      "right_only": 0,
+      "same_bookmaker_share": 0.875,
+      "same_outcome_share": 0.875,
+      "union": 10
+    },
+    "original_vs_support": {
+      "action_spearman": 1.0,
+      "intersection": 3,
+      "jaccard": 0.3,
+      "left_only": 7,
+      "raw_spearman": 1.0,
+      "right_only": 0,
+      "same_bookmaker_share": 1.0,
+      "same_outcome_share": 1.0,
+      "union": 10
+    },
+    "support_vs_canonical": {
+      "action_spearman": 1.0,
+      "intersection": 3,
+      "jaccard": 0.375,
+      "left_only": 0,
+      "raw_spearman": 1.0,
+      "right_only": 5,
+      "same_bookmaker_share": 1.0,
+      "same_outcome_share": 1.0,
+      "union": 8
+    }
+  },
+  "streams": {
+    "canonical_timing": {
+      "events": 8,
+      "rows": 8,
+      "rows_by_cutoff": {
+        "24": 5,
+        "48": 3
+      },
+      "snapshots": 4
+    },
+    "original": {
+      "events": 10,
+      "rows": 10,
+      "rows_by_cutoff": {
+        "24": 5,
+        "48": 4,
+        "6": 1
+      },
+      "snapshots": 4
+    },
+    "support_repaired": {
+      "events": 3,
+      "rows": 3,
+      "rows_by_cutoff": {
+        "48": 3
+      },
+      "snapshots": 1
+    }
+  }
+}
