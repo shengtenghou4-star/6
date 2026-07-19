@@ -15,6 +15,8 @@ CAMPAIGN_START = pd.Timestamp("2026-07-19T06:00:00Z")
 POLICY_ACTIVATION = pd.Timestamp("2026-07-19T11:00:00Z")
 LATEST_ELIGIBLE_OBSERVATION = pd.Timestamp("2026-07-26T03:15:00Z")
 CAMPAIGN_END = pd.Timestamp("2026-07-26T06:30:00Z")
+COLLECTION_CADENCE_HOURS = 3.0
+CYCLE_GAP_HOURS = 1.0
 FRACTION = 0.05
 SIMULATIONS = 20000
 SEED = 20260719
@@ -40,16 +42,20 @@ def kish_effective_size(values: pd.Series) -> float:
 
 def gamma_poisson_final(
     observed: int,
-    elapsed_days: float,
-    total_days: float,
+    observed_cycles: int,
+    total_cycles: int,
     rng: np.random.Generator,
     simulations: int,
 ) -> np.ndarray:
-    if elapsed_days <= 0:
+    if observed_cycles <= 0 or total_cycles <= observed_cycles:
         return np.full(simulations, observed, dtype=int)
-    remaining = max(total_days - elapsed_days, 0.0)
-    rate = rng.gamma(shape=observed + 0.5, scale=1.0 / elapsed_days, size=simulations)
-    return observed + rng.poisson(rate * remaining)
+    remaining_cycles = total_cycles - observed_cycles
+    rate_per_cycle = rng.gamma(
+        shape=observed + 0.5,
+        scale=1.0 / observed_cycles,
+        size=simulations,
+    )
+    return observed + rng.poisson(rate_per_cycle * remaining_cycles)
 
 
 def summarize(values: np.ndarray) -> dict[str, float]:
@@ -71,6 +77,38 @@ def concentration(frame: pd.DataFrame, column: str) -> dict[str, Any] | None:
         "largest_share": float(counts.iloc[0] / counts.sum()),
         "top5_share": float(counts.iloc[:5].sum() / counts.sum()),
     }
+
+
+def attach_collection_cycles(frame: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    snapshots = (
+        frame.groupby("realized_snapshot_id", as_index=False)
+        .agg(
+            cycle_time=("realized_snapshot_ingested_at", "min"),
+            candidate_rows=("event_id", "size"),
+            unique_events=("event_id", "nunique"),
+        )
+        .sort_values("cycle_time")
+        .reset_index(drop=True)
+    )
+    gap_hours = snapshots["cycle_time"].diff().dt.total_seconds().div(3600.0)
+    snapshots["collection_cycle"] = (
+        gap_hours.fillna(CYCLE_GAP_HOURS + 1.0).gt(CYCLE_GAP_HOURS).cumsum() - 1
+    ).astype(int)
+    cycle_summary = (
+        snapshots.groupby("collection_cycle", as_index=False)
+        .agg(
+            cycle_time=("cycle_time", "min"),
+            snapshots=("realized_snapshot_id", "nunique"),
+            snapshot_candidate_rows=("candidate_rows", "sum"),
+        )
+        .sort_values("cycle_time")
+    )
+    return frame.merge(
+        snapshots[["realized_snapshot_id", "collection_cycle"]],
+        on="realized_snapshot_id",
+        how="left",
+        validate="many_to_one",
+    ), cycle_summary
 
 
 def main() -> None:
@@ -114,21 +152,40 @@ def main() -> None:
     frame["utc_day"] = frame["realized_snapshot_ingested_at"].dt.strftime("%Y-%m-%d")
     frame["raw_positive"] = frame["raw_candidate_score"] > 0
     frame["residual_positive"] = frame["action_rank_score_for_raw_candidate"] > 0
+    frame, cycle_summary = attach_collection_cycles(frame)
+    cycle_summary.to_csv(root / "collection-cycles.csv", index=False)
 
-    latest = min(frame["realized_snapshot_ingested_at"].max(), LATEST_ELIGIBLE_OBSERVATION)
-    elapsed_days = max((latest - POLICY_ACTIVATION).total_seconds() / 86400.0, 1.0 / 24.0)
-    total_days = (LATEST_ELIGIBLE_OBSERVATION - POLICY_ACTIVATION).total_seconds() / 86400.0
+    observed_cycles = int(frame["collection_cycle"].nunique())
+    first_cycle = cycle_summary["cycle_time"].min()
+    total_cycles = 1 + int(
+        np.floor(
+            max(
+                (LATEST_ELIGIBLE_OBSERVATION - first_cycle).total_seconds(),
+                0.0,
+            )
+            / (COLLECTION_CADENCE_HOURS * 3600.0)
+        )
+    )
+    total_cycles = max(total_cycles, observed_cycles)
+    reliability = (
+        "insufficient_calibration"
+        if observed_cycles < 3
+        else "preliminary"
+        if observed_cycles < 8
+        else "operational"
+    )
     rng = np.random.default_rng(args.seed)
     simulations = args.simulations
 
     candidate_final = gamma_poisson_final(
-        len(frame), elapsed_days, total_days, rng, simulations
+        len(frame), observed_cycles, total_cycles, rng, simulations
     )
-    event_first = frame.groupby("event_id", as_index=False)[
-        "realized_snapshot_ingested_at"
-    ].min()
     event_final = gamma_poisson_final(
-        int(frame["event_id"].nunique()), elapsed_days, total_days, rng, simulations
+        int(frame["event_id"].nunique()),
+        observed_cycles,
+        total_cycles,
+        rng,
+        simulations,
     )
 
     cutoffs = (48, 24, 12, 6)
@@ -138,7 +195,9 @@ def main() -> None:
     cutoff_rows: list[dict[str, Any]] = []
     for cutoff in cutoffs:
         group = frame[frame["supported_closing_cutoff_hours"] == cutoff]
-        final_n = gamma_poisson_final(len(group), elapsed_days, total_days, rng, simulations)
+        final_n = gamma_poisson_final(
+            len(group), observed_cycles, total_cycles, rng, simulations
+        )
         cutoff_final[cutoff] = final_n
         additional = np.maximum(final_n - len(group), 0)
         raw_probability = rng.beta(
@@ -186,6 +245,7 @@ def main() -> None:
             candidate_rows=("event_id", "size"),
             unique_events=("event_id", "nunique"),
             snapshots=("realized_snapshot_id", "nunique"),
+            collection_cycles=("collection_cycle", "nunique"),
             bookmakers=("bookmaker_key", "nunique"),
         )
         .reset_index()
@@ -222,6 +282,8 @@ def main() -> None:
     )
 
     warnings: list[str] = []
+    if observed_cycles < 3:
+        warnings.append("forecast_calibration_insufficient_fewer_than_3_cycles")
     if float(np.mean(candidate_gate)) < 0.80:
         warnings.append("candidate_300_gate_at_risk")
     if float(np.mean(event_gate)) < 0.80:
@@ -242,6 +304,8 @@ def main() -> None:
     report = {
         "status": "completed",
         "forecast_type": "outcome_blind_interim_operational_forecast",
+        "forecast_reliability": reliability,
+        "probabilities_decision_grade": bool(observed_cycles >= 3),
         "generated_at_utc": pd.Timestamp.now(tz=UTC).isoformat(),
         "input": {
             "path": str(candidate_path),
@@ -249,16 +313,18 @@ def main() -> None:
             "post_activation_rows": int(len(frame)),
             "post_activation_unique_events": int(frame["event_id"].nunique()),
             "post_activation_snapshots": int(frame["realized_snapshot_id"].nunique()),
-            "latest_ingestion_utc": latest.isoformat(),
+            "observed_collection_cycles": observed_cycles,
+            "first_cycle_utc": first_cycle.isoformat(),
+            "latest_cycle_utc": cycle_summary["cycle_time"].max().isoformat(),
         },
         "frozen_window": {
             "campaign_start_utc": CAMPAIGN_START.isoformat(),
             "policy_activation_utc": POLICY_ACTIVATION.isoformat(),
             "latest_eligible_observation_utc": LATEST_ELIGIBLE_OBSERVATION.isoformat(),
             "campaign_end_utc": CAMPAIGN_END.isoformat(),
-            "elapsed_fraction_of_eligible_window": float(
-                min(elapsed_days / total_days, 1.0)
-            ),
+            "collection_cadence_hours": COLLECTION_CADENCE_HOURS,
+            "planned_collection_cycles_from_first_observed_cycle": total_cycles,
+            "observed_cycle_fraction": float(observed_cycles / total_cycles),
         },
         "current_effective_sample": {
             "candidate_rows": int(len(frame)),
@@ -302,7 +368,8 @@ def main() -> None:
             "two_sided_alpha": 0.05,
             "power": 0.80,
             "z_alpha_plus_power": Z_ALPHA_PLUS_POWER,
-            "forecast_model": "Jeffreys-prior gamma-Poisson homogeneous accrual with beta-binomial positive-score capacity",
+            "forecast_model": "Jeffreys-prior gamma-Poisson per inferred collection cycle with beta-binomial positive-score capacity",
+            "cycle_inference": f"new cycle after more than {CYCLE_GAP_HOURS} hour between snapshot ingestion times",
         },
         "warnings": sorted(set(warnings)),
         "evidence_boundary": {
