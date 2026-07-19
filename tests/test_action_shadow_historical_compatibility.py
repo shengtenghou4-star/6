@@ -46,6 +46,7 @@ def test_closing_regressor_deltas_are_not_simplex_reprojected():
             "bookmaker_key": "book",
             "market_key": "h2h",
             "realized_snapshot_id": "snapshot",
+            "supported_closing_cutoff_hours": 12,
         }
     )
     records = pd.DataFrame([row])
