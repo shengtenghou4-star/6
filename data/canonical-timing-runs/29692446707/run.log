@@ -1,0 +1,109 @@
+/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/sklearn/utils/validation.py:2827: UserWarning: X does not have valid feature names, but HistGradientBoostingClassifier was fitted with feature names
+  warnings.warn(
+/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/sklearn/utils/validation.py:2827: UserWarning: X does not have valid feature names, but HistGradientBoostingClassifier was fitted with feature names
+  warnings.warn(
+/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/sklearn/utils/validation.py:2827: UserWarning: X does not have valid feature names, but HistGradientBoostingRegressor was fitted with feature names
+  warnings.warn(
+/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/sklearn/utils/validation.py:2827: UserWarning: X does not have valid feature names, but HistGradientBoostingRegressor was fitted with feature names
+  warnings.warn(
+/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/sklearn/utils/validation.py:2827: UserWarning: X does not have valid feature names, but HistGradientBoostingRegressor was fitted with feature names
+  warnings.warn(
+/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/sklearn/utils/validation.py:2827: UserWarning: X does not have valid feature names, but HistGradientBoostingRegressor was fitted with feature names
+  warnings.warn(
+/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/sklearn/utils/validation.py:2827: UserWarning: X does not have valid feature names, but HistGradientBoostingRegressor was fitted with feature names
+  warnings.warn(
+/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/sklearn/utils/validation.py:2827: UserWarning: X does not have valid feature names, but HistGradientBoostingRegressor was fitted with feature names
+  warnings.warn(
+{
+  "adapter_id": "canonical_cutoff_coverage_normalized_v1",
+  "diagnostics": {
+    "bookmakers": 21,
+    "canonical_candidate_events": 8,
+    "canonical_event_candidates": 8,
+    "closing_targets_used": false,
+    "cutoff_distance_hours": {
+      "maximum": 5.994123807777768,
+      "median": 4.993850044722219,
+      "p90": 5.994123807777768
+    },
+    "events": 8,
+    "globally_excluded_rows": 39,
+    "globally_supported_rows": 147,
+    "input_rows": 1081,
+    "match_outcomes_used": false,
+    "normalized_active_feature_median": 1.0,
+    "original_active_feature_median": 0.5806451612903226,
+    "panel_groups": 8,
+    "panel_peer_capacity": {
+      "maximum": 20,
+      "median": 18.0,
+      "minimum": 15
+    },
+    "policy": {
+      "activation_utc": "2026-07-19T15:00:00Z",
+      "adapter_id": "canonical_cutoff_coverage_normalized_v1",
+      "maximum_historical_hours": 48.0,
+      "minimum_historical_hours": 6.0
+    },
+    "post_activation_rows": 186,
+    "pre_activation_rows_excluded": 895,
+    "rows_by_cutoff": {
+      "24": {
+        "distance_median_hours": 5.993976403055555,
+        "distance_p90_hours": 5.994123807777768,
+        "events": 5,
+        "rows": 99
+      },
+      "48": {
+        "distance_median_hours": 0.506265470833327,
+        "distance_p90_hours": 0.506265470833327,
+        "events": 3,
+        "rows": 48
+      }
+    },
+    "score_change": {
+      "action_mean_absolute_change": 0.0006992833790718018,
+      "action_pearson": 0.9240615005773937,
+      "action_spearman": 0.8086312233863685,
+      "raw_mean_absolute_change": 0.000521731313328615,
+      "raw_pearson": 0.9777991675143323,
+      "raw_spearman": 0.8650832933459782
+    },
+    "snapshots": 4,
+    "status": "prepared"
+  },
+  "outputs": {
+    "event_candidates": {
+      "path": "canonical-timing-event-candidates.csv.gz",
+      "rows": 8,
+      "sha256": "94ab63025eed71f9a5d1ab496dfd6f88660f00c3b0c6269b5a3319e7fa31630d"
+    },
+    "per_book_scores": {
+      "path": "canonical-timing-per-book-scores.csv.gz",
+      "rows": 147,
+      "sha256": "7ed45342a1e13cc8b1bb3c121fd4821d126c2e8dc0e5096b40df4a2ec8d860cb"
+    }
+  },
+  "policy": {
+    "closing_targets_used": false,
+    "match_outcomes_used": false,
+    "no_execution": true,
+    "original_v2_shadow_replaced": false,
+    "parallel_unvalidated_transfer": true,
+    "research_only": true,
+    "support_repaired_shadow_replaced": false
+  },
+  "schema_version": 1,
+  "source": {
+    "bundle": {
+      "bundle_id": "generic-action-shadow-v1-8bb898c3c067",
+      "manifest_sha256": "1bc04196e86b9802eedba50411f834e5155de814dffccc16289f6c65d12da757"
+    },
+    "per_book_scores": {
+      "path": "prospective-data/data/derived/latest/shadow/per-book-shadow-scores.csv.gz",
+      "rows": 1081,
+      "sha256": "0b5e41f65eb6a2fe22a008b59f5b47316c5cf3e839a2f0256d8028e37ff274d4"
+    }
+  },
+  "status": "scored"
+}
