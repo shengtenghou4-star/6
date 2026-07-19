@@ -1,6 +1,18 @@
 name: Prospective Adapter Coverage Audit
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/prospective-adapter-coverage-audit.yml"
+  workflow_run:
+    workflows:
+      - "Prospective Canonical Timing Shadow"
+    types:
+      - completed
+    branches:
+      - main
   schedule:
     - cron: "27 */3 * * *"
   workflow_dispatch:
@@ -24,6 +36,7 @@ env:
 
 jobs:
   audit:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -71,25 +84,49 @@ jobs:
           path: prospective-data
           fetch-depth: 1
 
-      - name: Check stream readiness
+      - name: Check aligned stream readiness
         if: steps.window.outputs.active == 'true' && github.event_name != 'pull_request'
         id: ready
         shell: bash
         run: |
           set -euo pipefail
-          files=(
-            prospective-data/data/derived/latest/shadow/event-shadow-candidates.csv.gz
-            prospective-data/data/derived/latest/support-repaired-shadow/support-repaired-event-candidates.csv.gz
-            prospective-data/data/derived/latest/canonical-timing-shadow/canonical-timing-event-candidates.csv.gz
-          )
-          ready=true
-          for file in "${files[@]}"; do
-            if [[ ! -f "$file" ]]; then
-              echo "Waiting for $file"
-              ready=false
-            fi
-          done
-          echo "ready=$ready" >> "$GITHUB_OUTPUT"
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          root = Path("prospective-data/data/derived/latest")
+          candidate_paths = [
+              root / "shadow/event-shadow-candidates.csv.gz",
+              root / "support-repaired-shadow/support-repaired-event-candidates.csv.gz",
+              root / "canonical-timing-shadow/canonical-timing-event-candidates.csv.gz",
+          ]
+          manifest_paths = {
+              "original": root / "shadow/manifest.json",
+              "support": root / "support-repaired-shadow/manifest.json",
+              "canonical": root / "canonical-timing-shadow/manifest.json",
+          }
+          missing = [str(path) for path in [*candidate_paths, *manifest_paths.values()] if not path.exists()]
+          ready = not missing
+          reason = None
+          if ready:
+              manifests = {name: json.loads(path.read_text()) for name, path in manifest_paths.items()}
+              original_sha = manifests["original"]["outputs"]["per_book_scores"]["sha256"]
+              support_sha = manifests["support"]["source"]["per_book_scores"]["sha256"]
+              canonical_sha = manifests["canonical"]["source"]["per_book_scores"]["sha256"]
+              ready = original_sha == support_sha == canonical_sha
+              if not ready:
+                  reason = {
+                      "original": original_sha,
+                      "support": support_sha,
+                      "canonical": canonical_sha,
+                  }
+          else:
+              reason = {"missing": missing}
+          with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as handle:
+              handle.write(f"ready={'true' if ready else 'false'}\n")
+          print({"ready": ready, "reason": reason})
+          PY
 
       - name: Run outcome-blind adapter coverage audit
         if: steps.ready.outputs.ready == 'true'
@@ -124,8 +161,17 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/adapter-coverage-audits data/derived/latest/adapter-coverage-audit
           git commit -m "Record adapter coverage audit ${GITHUB_RUN_ID}"
-          git pull --rebase origin prospective-data
-          git push origin HEAD:prospective-data
+          for attempt in 1 2 3; do
+            git pull --rebase origin prospective-data
+            if git push origin HEAD:prospective-data; then
+              exit 0
+            fi
+            if [[ "$attempt" == "3" ]]; then
+              echo "Unable to persist adapter coverage after three attempts" >&2
+              exit 1
+            fi
+            sleep $((attempt * 5))
+          done
 
       - name: Upload audit evidence
         if: always() && steps.ready.outputs.ready == 'true'
@@ -137,4 +183,5 @@ jobs:
           if-no-files-found: warn
 
 # This audit reads no closing targets or match outcomes and cannot modify the
-# running streams or their frozen campaign-close evaluators.
+# running streams or their frozen campaign-close evaluators. It runs only when
+# all three candidate streams derive from the same original score ledger.

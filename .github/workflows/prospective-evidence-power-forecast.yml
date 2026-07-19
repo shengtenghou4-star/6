@@ -1,6 +1,18 @@
 name: Prospective Evidence Power Forecast
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/prospective-evidence-power-forecast.yml"
+  workflow_run:
+    workflows:
+      - "Prospective Sequence Campaign"
+    types:
+      - completed
+    branches:
+      - main
   schedule:
     - cron: "27 */6 * * *"
   workflow_dispatch:
@@ -23,6 +35,7 @@ env:
 
 jobs:
   forecast:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -40,7 +53,6 @@ jobs:
               return datetime.fromisoformat(value.replace("Z", "+00:00")).astimezone(UTC)
           now = datetime.now(UTC)
           active = parse(os.environ["FORECAST_START_UTC"]) <= now < parse(os.environ["FORECAST_END_UTC"])
-          # PR runs are always allowed for validation.
           if os.environ.get("GITHUB_EVENT_NAME") == "pull_request":
               active = True
           with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as fh:
@@ -79,7 +91,7 @@ jobs:
             --seed 20260719 \
             2>&1 | tee artifacts/evidence-power-forecast/run.log
 
-      - name: Persist immutable scheduled forecast
+      - name: Persist immutable forecast
         if: steps.window.outputs.active == 'true' && github.event_name != 'pull_request'
         shell: bash
         run: |
@@ -96,7 +108,17 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add "data/forecasts/evidence-power/${GITHUB_RUN_ID}"
           git commit -m "Record prospective evidence forecast ${GITHUB_RUN_ID}"
-          git push origin HEAD:prospective-data
+          for attempt in 1 2 3; do
+            git pull --rebase origin prospective-data
+            if git push origin HEAD:prospective-data; then
+              exit 0
+            fi
+            if [[ "$attempt" == "3" ]]; then
+              echo "Unable to persist forecast after three attempts" >&2
+              exit 1
+            fi
+            sleep $((attempt * 5))
+          done
 
       - name: Upload forecast evidence
         if: always() && steps.window.outputs.active == 'true'
@@ -109,3 +131,4 @@ jobs:
 
 # The schedule is inert outside the frozen campaign window. Forecasts are
 # outcome-blind and may not change the running policy or final evidence gates.
+# A successful campaign run triggers an immediate checkpoint; cron is fallback.

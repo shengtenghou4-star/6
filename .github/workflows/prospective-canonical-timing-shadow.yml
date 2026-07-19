@@ -1,6 +1,18 @@
 name: Prospective Canonical Timing Shadow
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/prospective-canonical-timing-shadow.yml"
+  workflow_run:
+    workflows:
+      - "Prospective Sequence Campaign"
+    types:
+      - completed
+    branches:
+      - main
   schedule:
     - cron: "17 */3 * * *"
   workflow_dispatch:
@@ -30,6 +42,7 @@ env:
 
 jobs:
   canonical:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -109,7 +122,7 @@ jobs:
             --adapter-id "$ADAPTER_ID" \
             2>&1 | tee artifacts/canonical-timing-shadow/run.log
 
-      - name: Persist immutable scheduled adapter evidence
+      - name: Persist immutable adapter evidence
         if: steps.window.outputs.active == 'true' && github.event_name != 'pull_request'
         shell: bash
         run: |
@@ -129,8 +142,17 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/canonical-timing-runs data/derived/latest/canonical-timing-shadow
           git commit -m "Record canonical-timing shadow ${GITHUB_RUN_ID}"
-          git pull --rebase origin prospective-data
-          git push origin HEAD:prospective-data
+          for attempt in 1 2 3; do
+            git pull --rebase origin prospective-data
+            if git push origin HEAD:prospective-data; then
+              exit 0
+            fi
+            if [[ "$attempt" == "3" ]]; then
+              echo "Unable to persist canonical-timing evidence after three attempts" >&2
+              exit 1
+            fi
+            sleep $((attempt * 5))
+          done
 
       - name: Upload adapter evidence
         if: always() && steps.window.outputs.active == 'true'
@@ -143,3 +165,4 @@ jobs:
 
 # This workflow performs no paid API request. It processes already-persisted,
 # outcome-blind prospective scores and leaves both earlier streams unchanged.
+# A successful campaign run triggers immediate refresh; the cron remains fallback.
