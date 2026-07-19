@@ -1,0 +1,82 @@
+{
+  "diagnostics": {
+    "bookmakers_seen": 58,
+    "events_seen": 3,
+    "invalid_bookmaker_update_times": 0,
+    "invalid_commence_times": 0,
+    "invalid_decimal_prices": 0,
+    "invalid_market_update_times": 0,
+    "malformed_bookmakers": 0,
+    "malformed_events": 0,
+    "malformed_markets": 0,
+    "malformed_outcomes": 0,
+    "markets_seen": 62,
+    "normalized_rows": 186,
+    "outcomes_seen": 186
+  },
+  "endpoint": "/v4/sports/soccer_finland_veikkausliiga/odds",
+  "http_status": 200,
+  "immutability": "directory creation is exclusive; reruns never overwrite an existing snapshot",
+  "ingested_at_utc": "2026-07-19T08:58:03.839719Z",
+  "normalized": {
+    "fields": [
+      "provider",
+      "snapshot_ingested_at_utc",
+      "event_id",
+      "sport_key",
+      "sport_title",
+      "commence_time",
+      "commence_time_valid",
+      "home_team",
+      "away_team",
+      "bookmaker_key",
+      "bookmaker_title",
+      "bookmaker_last_update",
+      "bookmaker_last_update_valid",
+      "market_key",
+      "market_last_update",
+      "market_last_update_valid",
+      "outcome_name",
+      "outcome_description",
+      "price_decimal",
+      "price_valid_decimal",
+      "point",
+      "point_present",
+      "outcome_link",
+      "outcome_sid"
+    ],
+    "path": "normalized-outcomes.csv",
+    "rows": 186,
+    "unique_bookmakers": 20,
+    "unique_events": 3,
+    "unique_markets": 2
+  },
+  "provider": "the_odds_api_v4",
+  "raw": {
+    "bytes": 15931,
+    "path": "raw-response.json",
+    "sha256": "d6e76c50b9fa3c1a5c4d8315f4f8448ff677193da65632d23ad8eceed5fdd76c"
+  },
+  "request": {
+    "parameters": {
+      "commenceTimeFrom": "2026-07-19T08:58:02Z",
+      "commenceTimeTo": "2026-07-21T20:58:02Z",
+      "dateFormat": "iso",
+      "markets": "h2h",
+      "oddsFormat": "decimal",
+      "regions": "uk"
+    },
+    "sport": "soccer_finland_veikkausliiga"
+  },
+  "response_headers": {
+    "content-type": "application/json; charset=utf-8",
+    "quota": {
+      "x-requests-last": "1",
+      "x-requests-remaining": "486",
+      "x-requests-used": "14"
+    }
+  },
+  "response_url_without_api_key": "https://api.the-odds-api.com/v4/sports/soccer_finland_veikkausliiga/odds?markets=h2h&oddsFormat=decimal&dateFormat=iso&regions=uk&commenceTimeFrom=2026-07-19T08%3A58%3A02Z&commenceTimeTo=2026-07-21T20%3A58%3A02Z",
+  "schema_version": 1,
+  "timing_note": "ingested_at_utc is collector time; bookmaker/market last_update fields are preserved separately when supplied by the provider"
+}
