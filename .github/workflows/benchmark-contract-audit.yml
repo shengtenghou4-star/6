@@ -43,7 +43,12 @@ jobs:
             --output artifacts/benchmark-contract-audit/reference-report.json
 
       - name: Run benchmark tests
-        run: pytest -q tests/test_benchmark_submission.py
+        shell: bash
+        run: |
+          set -o pipefail
+          pytest -q tests/test_benchmark_submission.py \
+            --junitxml=artifacts/benchmark-contract-audit/pytest.xml \
+            2>&1 | tee artifacts/benchmark-contract-audit/pytest.log
 
       - name: Upload contract evidence
         if: always()
