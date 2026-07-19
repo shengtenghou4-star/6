@@ -1,6 +1,8 @@
 # Experiment 021 Protocol — Threshold-free residual dose-response audit
 
-Status: **frozen before the workflow reads the Experiment 017 settled ledger**.
+Status: **frozen before the first successful workflow reads and evaluates the Experiment 017 settled ledger**.
+
+The initial implementation attempted 20 baseline-score bins but stopped before producing any statistic because one bookmaker/cutoff stratum contained only nine rows and could not populate ten dose bins. Before any result was generated, the baseline partition was reduced to 15 bins; the smallest frozen stratum then contains at least ten rows. No outcome, CLV or return statistic informed this amendment.
 
 ## Question
 
@@ -16,8 +18,8 @@ Does match-specific residual uplift improve subsequent same-book closing-price q
 
 ## Dose construction
 
-1. Split the raw baseline score into 20 deterministic equal-count bins separately within T-48, T-24, T-12 and T-6.
-2. Define adjustment strata as bookmaker × cutoff × baseline-score ventile.
+1. Split the raw baseline score into 15 deterministic equal-count bins separately within T-48, T-24, T-12 and T-6.
+2. Define adjustment strata as bookmaker × cutoff × baseline-score bin.
 3. Standardize residual uplift within each stratum.
 4. Assign ten deterministic equal-count residual-uplift dose bins within each stratum.
 5. Report closing log-CLV, fair-probability CLV and one-unit realized return for all ten bins and by cutoff.
