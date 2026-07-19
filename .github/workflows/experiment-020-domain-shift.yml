@@ -1,0 +1,70 @@
+name: Experiment 020 Domain Shift Audit
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "scripts/experiment_020_domain_shift_audit.py"
+      - "docs/EXPERIMENT_020_PROTOCOL.md"
+      - ".github/workflows/experiment-020-domain-shift.yml"
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check out cumulative prospective state
+        uses: actions/checkout@v4
+        with:
+          ref: prospective-data
+          path: prospective-data
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install
+        run: python -m pip install -e ".[dev]"
+
+      - name: Download frozen generic action-shadow bundle
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/generic-action-shadow
+          gh api "/repos/${GITHUB_REPOSITORY}/actions/artifacts/8435876486/zip" > artifacts/generic-action-shadow.zip
+          echo "53c5218fc3a0e20edcfcb7002ee08d76348e8115e590082b824cc0a16a209a37  artifacts/generic-action-shadow.zip" | sha256sum -c -
+          unzip -q artifacts/generic-action-shadow.zip -d artifacts/generic-action-shadow
+
+      - name: Run outcome-blind domain-shift audit
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p artifacts/experiment-020
+          python scripts/experiment_020_domain_shift_audit.py \
+            --bundle-root artifacts/generic-action-shadow/bundle \
+            --prospective-scores prospective-data/data/derived/latest/shadow/per-book-shadow-scores.csv.gz \
+            --output-root artifacts/experiment-020 \
+            --chunksize 128 \
+            2>&1 | tee artifacts/experiment-020/run.log
+
+      - name: Upload result evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-020-domain-shift-${{ github.run_id }}
+          path: |
+            artifacts/experiment-020/result.json
+            artifacts/experiment-020/feature-shift-metrics.csv
+            artifacts/experiment-020/run.log
+          retention-days: 90
+          if-no-files-found: warn
