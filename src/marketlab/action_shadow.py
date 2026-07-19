@@ -19,10 +19,21 @@ from .action_shadow_schema import (
     OUTCOMES,
     LoadedShadowBundle,
     _require_columns,
-    build_shadow_feature_records,
+    build_shadow_feature_records as _build_shadow_feature_records,
     load_shadow_bundle as _load_shadow_bundle,
     normalize_probabilities,
     sha256,
+)
+
+
+# The generic closing models were trained only at T-48, T-24, T-12 and T-6.
+# These non-overlapping windows permit collection jitter without silently
+# extrapolating into the unsupported late market or far-future horizon.
+CLOSING_CUTOFF_WINDOWS = (
+    (48, 36.0, 60.0, True),
+    (24, 18.0, 36.0, False),
+    (12, 9.0, 18.0, False),
+    (6, 4.0, 9.0, False),
 )
 
 
@@ -47,6 +58,36 @@ def load_shadow_bundle(directory: Path) -> LoadedShadowBundle:
     return _load_shadow_bundle(directory)
 
 
+def build_shadow_feature_records(
+    quote_ledger: pd.DataFrame,
+    transitions: pd.DataFrame,
+    *,
+    strict: bool = True,
+) -> tuple[pd.DataFrame, dict[str, int]]:
+    records, diagnostics = _build_shadow_feature_records(
+        quote_ledger,
+        transitions,
+        strict=strict,
+    )
+    hours = records["hours_to_commence_scaled_71"].to_numpy(float) * 71.0
+    bucket = np.zeros(len(records), dtype=np.int16)
+    for cutoff, lower, upper, include_upper in CLOSING_CUTOFF_WINDOWS:
+        mask = (hours >= lower) & ((hours <= upper) if include_upper else (hours < upper))
+        bucket[mask] = cutoff
+    unsupported = bucket == 0
+    diagnostics = dict(diagnostics)
+    diagnostics["unsupported_closing_horizon_chains"] = int(unsupported.sum())
+    diagnostics["supported_closing_horizon_chains"] = int((~unsupported).sum())
+    if strict and unsupported.any():
+        raise ValueError(f"unsupported historical closing horizon: {diagnostics}")
+    records = records.loc[~unsupported].copy()
+    records["supported_closing_cutoff_hours"] = bucket[~unsupported]
+    records.reset_index(drop=True, inplace=True)
+    if records.empty:
+        raise RuntimeError("no chains in historically supported closing horizons")
+    return records, diagnostics
+
+
 def _predict_raw_delta(models: Mapping[str, Any], prefix: str, x: np.ndarray) -> np.ndarray:
     return np.column_stack(
         [models[f"{prefix}_delta_{outcome}"].predict(x) for outcome in OUTCOMES]
@@ -63,7 +104,11 @@ def _predict_normal_action_delta(
 
 
 def score_shadow_records(records: pd.DataFrame, bundle: LoadedShadowBundle) -> pd.DataFrame:
-    _require_columns(records, [*NORMAL_FEATURES, *CLOSING_RAW_FEATURES], "shadow records")
+    _require_columns(
+        records,
+        [*NORMAL_FEATURES, *CLOSING_RAW_FEATURES, "supported_closing_cutoff_hours"],
+        "shadow records",
+    )
     normal_x = records[list(NORMAL_FEATURES)].to_numpy(float)
     current = records[["own_current_home_p", "own_current_draw_p", "own_current_away_p"]].to_numpy(float)
     normal_probability = bundle.models["normal_hazard"].predict_proba(normal_x)[:, 1]
