@@ -57,19 +57,25 @@ jobs:
 
       - name: Build deterministic paper assets
         run: |
+          mkdir -p artifacts/paper-assets
           python scripts/build_paper_assets.py \
             --output-root artifacts/paper-assets
           python scripts/prepare_paper_build.py \
             --output artifacts/paper-assets/manuscript-build.md
 
       - name: Run paper tests
+        shell: bash
         run: |
+          set -o pipefail
           pytest -q \
             tests/test_paper_claim_registry.py \
             tests/test_build_paper_assets.py \
-            tests/test_prepare_paper_build.py
+            tests/test_prepare_paper_build.py \
+            --junitxml=artifacts/paper-evidence-audit/pytest.xml \
+            2>&1 | tee artifacts/paper-evidence-audit/pytest.log
 
       - name: Record manuscript inventory
+        if: always()
         run: |
           python - <<'PY'
           import json
