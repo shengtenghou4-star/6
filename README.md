@@ -13,7 +13,7 @@ The historical evidence supports a real **repricing-information mechanism**:
 - the relationship is positive across every tested cutoff, selected outcome and bookmaker, and survives removing any one bookmaker;
 - related effects transfer to independent timestamped data and unseen-book diagnostics.
 
-The project has **not** established stable realized profit, executable scalability, account capacity or live-betting readiness. Historical return point estimates are encouraging in some frozen tests, but profit confidence intervals, adversarial-fill tests and heterogeneity checks still fail the project's validation gates.
+The project has **not** established stable realized profit, executable scalability, account capacity or live-betting readiness. Residual-minus-raw execution point return is broadly positive across frozen friction envelopes, but the small practical return is concentrated in home-selected opportunities, disappears under adversarial rejection, and remains statistically uncertain.
 
 The decisive next evidence is an untouched seven-day prospective campaign running from `2026-07-19T06:00:00Z` to `2026-07-26T06:30:00Z`.
 
@@ -28,7 +28,8 @@ The decisive next evidence is an untouched seven-day prospective campaign runnin
 | Effect is broadly distributed | Positive slope for 8/8 bookmakers, 3/3 selected outcomes and 4/4 cutoffs; every leave-one-book-out lower bound above zero | [Experiment 022](docs/EXPERIMENT_022_RESULT.md) |
 | Historical matched-budget return | Residual policy `+0.565%` ROI versus raw reference `-0.747%`, but uncertainty crosses zero | [Experiment 017](docs/EXPERIMENT_017_RESULT.md) |
 | Execution robustness | Residual-minus-raw point return positive in 60/64 exact envelopes; ordinary fill loss leaves a thin positive margin, adversarial rejection erases it, and the validation gate fails | [Experiment 023](docs/EXPERIMENT_023_RESULT.md) |
-| Untouched prospective transfer | In progress | [Phase 36 campaign](docs/PROSPECTIVE_MATCHED_BUDGET_SHADOW.md) |
+| Execution outcome attribution | Home point return positive in 4/4 practical mechanisms, draw in 0/4 and away in 1/4; removing home makes the point lift negative in 3/4 | [Experiment 024](docs/EXPERIMENT_024_RESULT.md) |
+| Untouched prospective transfer | Original and separately activated challenger evaluations are in progress | [Phase 36 campaign](docs/PROSPECTIVE_MATCHED_BUDGET_SHADOW.md) |
 | Stable profit and live execution | **Not established** | No authorization follows from this repository |
 
 ## Prospective validation
@@ -54,7 +55,7 @@ An outcome-blind domain-shift audit found two structural deployment mismatches:
 1. broad prospective timing windows versus exact historical cutoff states;
 2. a historical 31-peer coverage scale versus the current 19–20-peer provider panel.
 
-The original stream remains unchanged. A separately activated parallel adapter instead:
+The original stream remains unchanged. A separately activated conservative adapter instead:
 
 - retains rows within 1.75 hours of canonical cutoffs and inside the historical `[6h,48h]` range;
 - normalizes active peer-book coverage by contemporaneous panel capacity;
@@ -62,6 +63,20 @@ The original stream remains unchanged. A separately activated parallel adapter i
 - writes independent, research-only ledgers.
 
 See [the repair protocol](docs/PROSPECTIVE_SUPPORT_REPAIRED_SHADOW.md), [engineering validation](docs/PROSPECTIVE_SUPPORT_REPAIRED_SHADOW_VALIDATION.md) and [separate final evaluator](docs/PROSPECTIVE_SUPPORT_REPAIRED_COHORT_EVALUATION.md).
+
+### Canonical-timing parallel stream
+
+A second separately activated challenger preserves more globally supported observations. It keeps rows inside `[6h,48h]`, replaces only the model timing input with the assigned T-48/T-24/T-12/T-6 state, normalizes peer coverage and rescores with the unchanged frozen bundle. Its production activation is `2026-07-19T15:00:00Z`, and it has its own immutable stream and campaign-close evaluator.
+
+See [the canonical-timing protocol](docs/PROSPECTIVE_CANONICAL_TIMING_SHADOW.md) and [its separate final evaluator](docs/PROSPECTIVE_CANONICAL_TIMING_COHORT_EVALUATION.md).
+
+### Future home-selected cohort
+
+Experiment 024's home concentration is explicitly post-hoc. A new confirmatory cohort therefore uses only original-stream candidates ingested after `2026-07-19T15:00:00Z` whose raw-model selected outcome is home. It preserves the original exact quota and all original volume, uncertainty, cutoff and concentration gates; insufficient volume cannot be repaired by lowering them.
+
+See [the separately frozen home-selected evaluator](docs/PROSPECTIVE_HOME_ONLY_COHORT_EVALUATION.md).
+
+A scheduled outcome-blind [adapter coverage audit](docs/PROSPECTIVE_ADAPTER_COVERAGE_AUDIT.md) compares stream volume, overlap and score agreement after the common activation boundary without reading closing targets or changing any adapter.
 
 ## Research safeguards
 
