@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
 import joblib
 import numpy as np
 import pandas as pd
 import pytest
+import sklearn
 from sklearn.dummy import DummyClassifier, DummyRegressor
 
 from marketlab.action_shadow import (
@@ -147,7 +149,7 @@ def test_post_commence_and_missing_consensus_rejected():
         build_shadow_feature_records(*frames(missing_consensus=True))
 
 
-def test_bundle_tamper_rejected(tmp_path: Path):
+def test_bundle_tamper_and_runtime_mismatch_rejected(tmp_path: Path):
     x = np.array([[0.0], [1.0]])
     clf = DummyClassifier(strategy="prior").fit(x, [0, 1])
     reg = DummyRegressor(strategy="mean").fit(x, [0.0, 0.1])
@@ -158,6 +160,11 @@ def test_bundle_tamper_rejected(tmp_path: Path):
         files[name] = {"path": path.name, "sha256": sha256(path)}
     manifest = {
         "bundle_id": "fixture",
+        "runtime": {
+            "python_major_minor": f"{sys.version_info.major}.{sys.version_info.minor}",
+            "scikit_learn": sklearn.__version__,
+            "joblib": joblib.__version__,
+        },
         "feature_order": {
             "normal_features": list(NORMAL_FEATURES),
             "closing_raw_features": list(CLOSING_RAW_FEATURES),
@@ -166,9 +173,18 @@ def test_bundle_tamper_rejected(tmp_path: Path):
         },
         "model_files": files,
     }
-    (tmp_path / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    manifest_path = tmp_path / "manifest.json"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
     loaded = load_shadow_bundle(tmp_path)
     assert loaded.bundle_id == "fixture"
+
+    manifest["runtime"]["scikit_learn"] = "0.0.invalid"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="runtime mismatch"):
+        load_shadow_bundle(tmp_path)
+
+    manifest["runtime"]["scikit_learn"] = sklearn.__version__
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
     (tmp_path / "normal_hazard.joblib").write_bytes(b"tampered")
     with pytest.raises(ValueError, match="checksum mismatch"):
         load_shadow_bundle(tmp_path)
