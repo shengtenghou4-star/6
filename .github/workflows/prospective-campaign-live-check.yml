@@ -151,3 +151,5 @@ jobs:
             artifacts/matched-budget-shadow/
           retention-days: 90
           if-no-files-found: warn
+
+# Live-check revision 2: provider query bounds use whole-second UTC timestamps.
