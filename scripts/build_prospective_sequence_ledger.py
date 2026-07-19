@@ -8,10 +8,20 @@ from marketlab.prospective_sequence_states import discover_snapshot_directories
 from marketlab.prospective_sequences import materialize_sequence_artifacts
 
 EXPECTED_INSUFFICIENT_MESSAGES = (
+    "no complete snapshot directories under",
     "at least two observations per quote are required",
     "no earlier observations before closing states",
     "no pre-commence quote states",
 )
+
+
+def _safe_discover(root: Path) -> list[Path]:
+    try:
+        return discover_snapshot_directories(root)
+    except RuntimeError as exc:
+        if "no complete snapshot directories under" in str(exc):
+            return []
+        raise
 
 
 def main() -> None:
@@ -47,7 +57,7 @@ def main() -> None:
             marker in str(exc) for marker in EXPECTED_INSUFFICIENT_MESSAGES
         ):
             raise
-        directories = discover_snapshot_directories(snapshots_root)
+        directories = _safe_discover(snapshots_root)
         output_root.mkdir(parents=True, exist_ok=True)
         manifest = {
             "schema_version": 1,
