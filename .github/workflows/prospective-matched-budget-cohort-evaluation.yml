@@ -1,0 +1,121 @@
+name: Prospective Matched Budget Cohort Evaluation
+
+on:
+  schedule:
+    - cron: "17 7 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: prospective-matched-budget-cohort-evaluation
+  cancel-in-progress: false
+
+env:
+  EVALUATION_WINDOW_START_UTC: "2026-07-26T07:00:00Z"
+  EVALUATION_WINDOW_END_UTC: "2026-07-27T07:00:00Z"
+  EVALUATOR_MODULE_SHA256: "585c67fbe8b89cda8dfc885eca5efca187ba4e111cc3878c525b931c9a903561"
+  EVALUATOR_SCRIPT_SHA256: "867852aa71e95d59bed9a21856eb97ffda05eaa454257d997925344fef4ea82b"
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check frozen evaluation window
+        id: window
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os
+          from datetime import UTC, datetime
+          from pathlib import Path
+
+          def parse(value: str) -> datetime:
+              return datetime.fromisoformat(value.replace("Z", "+00:00")).astimezone(UTC)
+
+          now = datetime.now(UTC)
+          start = parse(os.environ["EVALUATION_WINDOW_START_UTC"])
+          end = parse(os.environ["EVALUATION_WINDOW_END_UTC"])
+          active = start <= now < end
+          with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as fh:
+              fh.write(f"active={'true' if active else 'false'}\n")
+          print({"now": now.isoformat(), "start": start.isoformat(), "end": end.isoformat(), "active": active})
+          PY
+
+      - name: Check out immutable prospective campaign state
+        if: steps.window.outputs.active == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: prospective-data
+          path: prospective-data
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        if: steps.window.outputs.active == 'true'
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Verify frozen evaluator source
+        if: steps.window.outputs.active == 'true'
+        shell: bash
+        run: |
+          echo "${EVALUATOR_MODULE_SHA256}  src/marketlab/prospective_matched_budget_evaluation.py" | sha256sum -c -
+          echo "${EVALUATOR_SCRIPT_SHA256}  scripts/evaluate_prospective_matched_budget_cohort.py" | sha256sum -c -
+
+      - name: Install frozen runtime range
+        if: steps.window.outputs.active == 'true'
+        run: python -m pip install "numpy>=1.26,<3" "pandas>=2.2,<3"
+
+      - name: Run outcome-blind campaign-close evaluation
+        if: steps.window.outputs.active == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          data_revision=$(git -C prospective-data rev-parse HEAD)
+          PYTHONPATH=src python scripts/evaluate_prospective_matched_budget_cohort.py \
+            --candidates prospective-data/data/derived/latest/shadow/event-shadow-candidates.csv.gz \
+            --closing-targets prospective-data/data/derived/latest/sequence/closing-targets.csv.gz \
+            --output-root artifacts/prospective-matched-budget-cohort \
+            --code-revision "$GITHUB_SHA" \
+            --data-revision "$data_revision"
+
+      - name: Commit immutable evaluation evidence
+        if: always() && steps.window.outputs.active == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! -d artifacts/prospective-matched-budget-cohort ]]; then
+            echo "No evaluation evidence directory exists; nothing to persist"
+            exit 0
+          fi
+          target="prospective-data/data/evaluations/matched-budget-cohort-v1"
+          if [[ -e "$target" ]]; then
+            echo "Immutable evaluation target already exists: $target" >&2
+            exit 1
+          fi
+          mkdir -p "$(dirname "$target")"
+          cp -a artifacts/prospective-matched-budget-cohort "$target"
+          cd prospective-data
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/evaluations/matched-budget-cohort-v1
+          git commit -m "Record prospective matched-budget cohort evaluation ${GITHUB_RUN_ID}"
+          git push origin HEAD:prospective-data
+
+      - name: Upload evaluation evidence
+        if: always() && steps.window.outputs.active == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: prospective-matched-budget-cohort-${{ github.run_id }}
+          path: artifacts/prospective-matched-budget-cohort/
+          retention-days: 90
+          if-no-files-found: warn
+
+# The daily cron is inert outside the one-time frozen window. Remove it after
+# Phase 43 is closed. Source hashes prevent post-registration evaluator drift.
