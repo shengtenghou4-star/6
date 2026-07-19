@@ -215,7 +215,17 @@ jobs:
             exit 0
           fi
           git commit -m "Prospective campaign run ${GITHUB_RUN_ID}"
-          git push origin HEAD:prospective-data
+          for attempt in 1 2 3; do
+            git pull --rebase origin prospective-data
+            if git push origin HEAD:prospective-data; then
+              exit 0
+            fi
+            if [[ "$attempt" == "3" ]]; then
+              echo "Unable to persist campaign state after three attempts" >&2
+              exit 1
+            fi
+            sleep $((attempt * 5))
+          done
 
       - name: Upload run evidence
         if: always() && steps.window.outputs.active == 'true'
@@ -235,3 +245,4 @@ jobs:
 # Phase 36 is closed.
 # Campaign API bounds intentionally use whole-second UTC timestamps.
 # Matched-budget v2 uses an exact floor quota and never forces a minimum-one selection.
+# Prospective-data pushes rebase and retry to survive concurrent evidence writers.
