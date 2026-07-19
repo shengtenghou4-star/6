@@ -1,0 +1,126 @@
+name: Prospective Support Repaired Cohort Evaluation
+
+on:
+  schedule:
+    - cron: "37 7 * * *"
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "scripts/evaluate_support_repaired_matched_budget_cohort.py"
+      - "tests/test_support_repaired_cohort_script.py"
+      - "docs/PROSPECTIVE_SUPPORT_REPAIRED_COHORT_EVALUATION.md"
+      - ".github/workflows/prospective-support-repaired-cohort-evaluation.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: prospective-support-repaired-cohort-evaluation
+  cancel-in-progress: false
+
+env:
+  EVALUATION_WINDOW_START_UTC: "2026-07-26T07:30:00Z"
+  EVALUATION_WINDOW_END_UTC: "2026-07-27T07:30:00Z"
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check frozen evaluation window
+        id: window
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os
+          from datetime import UTC, datetime
+          from pathlib import Path
+
+          def parse(value):
+              return datetime.fromisoformat(value.replace("Z", "+00:00")).astimezone(UTC)
+
+          now = datetime.now(UTC)
+          active = parse(os.environ["EVALUATION_WINDOW_START_UTC"]) <= now < parse(os.environ["EVALUATION_WINDOW_END_UTC"])
+          if os.environ.get("GITHUB_EVENT_NAME") == "pull_request":
+              active = True
+          with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as handle:
+              handle.write(f"active={'true' if active else 'false'}\n")
+          print({"now": now.isoformat(), "active": active})
+          PY
+
+      - uses: actions/setup-python@v5
+        if: steps.window.outputs.active == 'true'
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install
+        if: steps.window.outputs.active == 'true'
+        run: python -m pip install -e ".[dev]"
+
+      - name: Validate frozen evaluator on pull request
+        if: steps.window.outputs.active == 'true' && github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          python -m py_compile scripts/evaluate_support_repaired_matched_budget_cohort.py
+          pytest -q tests/test_support_repaired_cohort_script.py tests/test_prospective_matched_budget_evaluation.py
+
+      - name: Check out final prospective campaign state
+        if: steps.window.outputs.active == 'true' && github.event_name != 'pull_request'
+        uses: actions/checkout@v4
+        with:
+          ref: prospective-data
+          path: prospective-data
+          fetch-depth: 1
+
+      - name: Run outcome-blind support-repaired evaluation
+        if: steps.window.outputs.active == 'true' && github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          data_revision=$(git -C prospective-data rev-parse HEAD)
+          mkdir -p artifacts/support-repaired-matched-budget-cohort
+          python scripts/evaluate_support_repaired_matched_budget_cohort.py \
+            --candidates prospective-data/data/derived/latest/support-repaired-shadow/support-repaired-event-candidates.csv.gz \
+            --closing-targets prospective-data/data/derived/latest/sequence/closing-targets.csv.gz \
+            --output-root artifacts/support-repaired-matched-budget-cohort \
+            --code-revision "$GITHUB_SHA" \
+            --data-revision "$data_revision"
+
+      - name: Commit immutable evaluation evidence
+        if: always() && steps.window.outputs.active == 'true' && github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! -d artifacts/support-repaired-matched-budget-cohort ]]; then
+            echo "No evaluation evidence directory exists; nothing to persist"
+            exit 0
+          fi
+          target="prospective-data/data/evaluations/support-repaired-matched-budget-cohort-v1"
+          if [[ -e "$target" ]]; then
+            echo "Immutable evaluation target already exists: $target" >&2
+            exit 1
+          fi
+          mkdir -p "$(dirname "$target")"
+          cp -a artifacts/support-repaired-matched-budget-cohort "$target"
+          cd prospective-data
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/evaluations/support-repaired-matched-budget-cohort-v1
+          git commit -m "Record support-repaired matched-budget evaluation ${GITHUB_RUN_ID}"
+          git pull --rebase origin prospective-data
+          git push origin HEAD:prospective-data
+
+      - name: Upload evaluation evidence
+        if: always() && steps.window.outputs.active == 'true' && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: support-repaired-matched-budget-cohort-${{ github.run_id }}
+          path: artifacts/support-repaired-matched-budget-cohort/
+          retention-days: 90
+          if-no-files-found: warn
+
+# The daily cron is inert outside the one-time frozen window. This evaluator is
+# parallel to Phase 43 and cannot overwrite or reinterpret the original v2 test.
