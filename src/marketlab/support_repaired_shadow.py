@@ -8,33 +8,17 @@ import pandas as pd
 
 
 REQUIRED_COLUMNS = (
-    "event_id",
-    "bookmaker_key",
-    "market_key",
-    "context_snapshot_id",
-    "realized_snapshot_id",
-    "realized_snapshot_ingested_at",
-    "supported_closing_cutoff_hours",
-    "hours_to_commence_scaled_71",
-    "active_other_books_scaled_31",
-    "raw_candidate_score",
+    "event_id", "bookmaker_key", "market_key", "context_snapshot_id",
+    "realized_snapshot_id", "realized_snapshot_ingested_at",
+    "supported_closing_cutoff_hours", "hours_to_commence_scaled_71",
+    "active_other_books_scaled_31", "raw_candidate_score",
     "action_rank_score_for_raw_candidate",
 )
 FORBIDDEN_RESULT_COLUMNS = {
-    "score_home",
-    "score_away",
-    "winning_outcome",
-    "won",
-    "net_return",
-    "settled_return",
-    "match_result",
+    "score_home", "score_away", "winning_outcome", "won", "net_return",
+    "settled_return", "match_result",
 }
-UNIQUE_KEYS = (
-    "event_id",
-    "bookmaker_key",
-    "market_key",
-    "realized_snapshot_id",
-)
+UNIQUE_KEYS = ("event_id", "bookmaker_key", "market_key", "realized_snapshot_id")
 PANEL_KEYS = ("event_id", "context_snapshot_id", "market_key")
 
 
@@ -84,12 +68,13 @@ def prepare_support_repaired_records(
 
     activation = pd.to_datetime(policy.activation_utc, utc=True)
     pre_activation = frame["realized_snapshot_ingested_at"] < activation
-    frame = frame.loc[~pre_activation].copy()
+    pre_activation_count = int(pre_activation.sum())
+    frame = frame.loc[~pre_activation].copy().reset_index(drop=True)
     if frame.empty:
-        diagnostics = {
+        return frame, {
             "policy": asdict(policy),
             "input_rows": int(len(scores)),
-            "pre_activation_rows_excluded": int(pre_activation.sum()),
+            "pre_activation_rows_excluded": pre_activation_count,
             "post_activation_rows": 0,
             "timing_supported_rows": 0,
             "timing_excluded_rows": 0,
@@ -97,7 +82,6 @@ def prepare_support_repaired_records(
             "match_outcomes_used": False,
             "closing_targets_used": False,
         }
-        return frame, diagnostics
 
     frame["actual_hours_to_commence"] = pd.to_numeric(
         frame["hours_to_commence_scaled_71"], errors="coerce"
@@ -125,13 +109,14 @@ def prepare_support_repaired_records(
             "excluded_rows": int((~group_supported).sum()),
         }
     timing_excluded = int((~timing_supported).sum())
-    frame = frame.loc[timing_supported].copy()
+    post_activation_rows = int(len(frame))
+    frame = frame.loc[timing_supported].copy().reset_index(drop=True)
     if frame.empty:
-        diagnostics = {
+        return frame, {
             "policy": asdict(policy),
             "input_rows": int(len(scores)),
-            "pre_activation_rows_excluded": int(pre_activation.sum()),
-            "post_activation_rows": int((~pre_activation).sum()),
+            "pre_activation_rows_excluded": pre_activation_count,
+            "post_activation_rows": post_activation_rows,
             "timing_supported_rows": 0,
             "timing_excluded_rows": timing_excluded,
             "timing_by_cutoff": timing_profile,
@@ -139,14 +124,12 @@ def prepare_support_repaired_records(
             "match_outcomes_used": False,
             "closing_targets_used": False,
         }
-        return frame, diagnostics
 
     raw_active = pd.to_numeric(
         frame["active_other_books_scaled_31"], errors="coerce"
     ).to_numpy(dtype=float) * 31.0
     rounded_active = np.rint(raw_active)
-    reconciliation_error = np.abs(raw_active - rounded_active)
-    if not np.isfinite(raw_active).all() or float(reconciliation_error.max()) > 1e-6:
+    if not np.isfinite(raw_active).all() or float(np.abs(raw_active - rounded_active).max()) > 1e-6:
         raise ValueError("active peer-book count does not reconcile to an integer")
     frame["active_peer_book_count"] = rounded_active.astype(np.int16)
     frame["inferred_panel_peer_capacity"] = frame.groupby(
@@ -154,10 +137,7 @@ def prepare_support_repaired_records(
     )["active_peer_book_count"].transform("max")
     if (frame["inferred_panel_peer_capacity"] < 3).any():
         raise ValueError("inferred panel peer capacity is below historical minimum")
-    if (
-        frame["active_peer_book_count"]
-        > frame["inferred_panel_peer_capacity"]
-    ).any():
+    if (frame["active_peer_book_count"] > frame["inferred_panel_peer_capacity"]).any():
         raise RuntimeError("active peer count exceeds inferred panel capacity")
 
     frame["original_active_other_books_scaled_31"] = frame[
@@ -180,8 +160,8 @@ def prepare_support_repaired_records(
     diagnostics = {
         "policy": asdict(policy),
         "input_rows": int(len(scores)),
-        "pre_activation_rows_excluded": int(pre_activation.sum()),
-        "post_activation_rows": int((~pre_activation).sum()),
+        "pre_activation_rows_excluded": pre_activation_count,
+        "post_activation_rows": post_activation_rows,
         "timing_supported_rows": int(len(frame)),
         "timing_excluded_rows": timing_excluded,
         "timing_by_cutoff": timing_profile,
@@ -205,12 +185,7 @@ def prepare_support_repaired_records(
         "closing_targets_used": False,
     }
     frame.sort_values(
-        [
-            "realized_snapshot_ingested_at",
-            "realized_snapshot_id",
-            "event_id",
-            "bookmaker_key",
-        ],
+        ["realized_snapshot_ingested_at", "realized_snapshot_id", "event_id", "bookmaker_key"],
         kind="mergesort",
         inplace=True,
     )
