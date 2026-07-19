@@ -1,0 +1,56 @@
+name: Generic Action Shadow Bundle
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "src/marketlab/action_shadow.py"
+      - "src/marketlab/action_shadow_schema.py"
+      - "scripts/build_generic_action_shadow_bundle.py"
+      - "scripts/finalize_shadow_bundle_runtime.py"
+      - "scripts/score_prospective_action_shadow.py"
+      - "tests/test_action_shadow*.py"
+      - "docs/ACTION_RESIDUAL_SHADOW_SCORER.md"
+      - ".github/workflows/generic-action-shadow-bundle.yml"
+      - "pyproject.toml"
+
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install
+        run: python -m pip install -e '.[dev]'
+      - name: Test shadow adapter and bundle integrity
+        run: pytest -q tests/test_action_shadow*.py tests/test_prospective_sequences.py
+      - name: Build frozen generic shadow bundle
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p artifacts/generic-action-shadow-bundle
+          python scripts/build_generic_action_shadow_bundle.py \
+            --output-root artifacts/generic-action-shadow-bundle \
+            2>&1 | tee artifacts/generic-action-shadow-bundle/run.log
+      - name: Freeze runtime compatibility metadata
+        run: |
+          python scripts/finalize_shadow_bundle_runtime.py \
+            --bundle-root artifacts/generic-action-shadow-bundle/bundle \
+            --result artifacts/generic-action-shadow-bundle/result.json
+      - name: Upload bundle evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: generic-action-shadow-bundle
+          path: |
+            artifacts/generic-action-shadow-bundle/bundle/manifest.json
+            artifacts/generic-action-shadow-bundle/bundle/*.joblib
+            artifacts/generic-action-shadow-bundle/result.json
+            artifacts/generic-action-shadow-bundle/failure.json
+            artifacts/generic-action-shadow-bundle/progress.json
+            artifacts/generic-action-shadow-bundle/run.log
+          if-no-files-found: warn
