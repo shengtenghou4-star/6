@@ -43,7 +43,14 @@ The adapter reconstructs the exact 30 generic historical normal-action inputs:
 - fraction of peer books moving;
 - hours to event scaled by the historical 71-hour denominator.
 
-Rows are rejected or excluded when they are post-commence, non-consecutive, missing peer consensus, non-finite or inconsistent with the frozen feature order.
+The closing models were trained only at T-48h, T-24h, T-12h and T-6h. Prospective context states are accepted only in the following frozen, non-overlapping support windows:
+
+- T-48 bucket: 36–60 hours before event;
+- T-24 bucket: 18–<36 hours;
+- T-12 bucket: 9–<18 hours;
+- T-6 bucket: 4–<9 hours.
+
+Rows are rejected or excluded when they are post-commence, outside those historical support windows, non-consecutive, missing peer consensus, non-finite or inconsistent with the frozen feature order.
 
 ## Build a model bundle
 
@@ -60,8 +67,11 @@ The bundle contains twelve joblib model files and a manifest with:
 - model classes and parameters;
 - training counts;
 - residual equations;
+- exact Python, scikit-learn and joblib runtime versions;
 - per-file SHA-256 hashes;
 - explicit research-only flags.
+
+The loader verifies runtime compatibility before unpickling any model and rejects mismatched Python major/minor, scikit-learn or joblib versions. The project pins the serialization-sensitive scikit-learn and joblib versions used by the workflow.
 
 Model binaries are uploaded as workflow artifacts and are not committed to the repository.
 
