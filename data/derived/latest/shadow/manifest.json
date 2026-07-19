@@ -1,0 +1,8 @@
+{
+  "no_execution": true,
+  "reason": "at least two observations per quote are required",
+  "research_only": true,
+  "schema_version": 1,
+  "sequence_status": "insufficient_overlap",
+  "status": "sequence_not_ready"
+}

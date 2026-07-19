@@ -1,0 +1,20 @@
+{
+  "forbidden_fields": [
+    "home_score",
+    "away_score",
+    "result",
+    "winner"
+  ],
+  "market_key": "h2h",
+  "minimum_other_books": 3,
+  "outcome_blind": true,
+  "reason": "at least two observations per quote are required",
+  "schema_version": 1,
+  "snapshot_count": 2,
+  "snapshot_directories": [
+    "20260719T071437_483723Z__soccer_sweden_allsvenskan__5a8ea3ef4713",
+    "20260719T071437_977344Z__soccer_sweden_superettan__2a3d5a47bd55"
+  ],
+  "snapshots_root": "prospective-data/data/prospective-odds",
+  "status": "insufficient_overlap"
+}
