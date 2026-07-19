@@ -17,6 +17,19 @@ The project has **not** established stable realized profit, executable scalabili
 
 The decisive next evidence is an untouched seven-day prospective campaign running from `2026-07-19T06:00:00Z` to `2026-07-26T06:30:00Z`.
 
+## Research outputs
+
+The repository now turns the same evidence base into several independently useful assets:
+
+- [empirical paper draft](paper/manuscript.md) — the historical mechanism, economic bottleneck and reserved prospective result block;
+- [machine-checkable claim registry](paper/claim_evidence_registry.json) — every load-bearing paper claim mapped to a repository result;
+- [Market Action Residual Benchmark](benchmark/SPEC.md) — a fixed-identity residual-ranking benchmark with a schema, validator and reference submission;
+- [external review packet](docs/EXTERNAL_REVIEW_PACKET.md) — a bounded audit path and falsification request;
+- [methods-note prospectus](docs/METHODS_NOTE_PROSPECTUS.md) — a reusable protocol for falsification-first historical market ML;
+- [asset multiplication map](docs/PROJECT_ASSET_MULTIPLICATION.md) — paper, benchmark, reproducibility, portfolio and domain-transfer paths.
+
+The paper and benchmark have independent CI audits. A compiled paper artifact is produced by the `Paper Build` workflow; compilation does not promote any evidence tier.
+
 ## Evidence hierarchy
 
 | Evidence level | Current status | Representative evidence |
