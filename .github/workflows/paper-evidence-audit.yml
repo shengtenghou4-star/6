@@ -1,0 +1,84 @@
+name: Paper Evidence Audit
+
+on:
+  pull_request:
+    paths:
+      - "paper/**"
+      - "scripts/validate_paper_claims.py"
+      - "tests/test_paper_claim_registry.py"
+      - ".github/workflows/paper-evidence-audit.yml"
+      - "docs/EXPERIMENT_*_RESULT.md"
+      - "docs/GENERIC_ACTION_SHADOW_BUNDLE_RESULT.md"
+  push:
+    branches:
+      - main
+    paths:
+      - "paper/**"
+      - "scripts/validate_paper_claims.py"
+      - "tests/test_paper_claim_registry.py"
+      - ".github/workflows/paper-evidence-audit.yml"
+      - "docs/EXPERIMENT_*_RESULT.md"
+      - "docs/GENERIC_ACTION_SHADOW_BUNDLE_RESULT.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install
+        run: python -m pip install -e ".[dev]"
+
+      - name: Validate claim registry
+        run: |
+          mkdir -p artifacts/paper-evidence-audit
+          python scripts/validate_paper_claims.py \
+            --output artifacts/paper-evidence-audit/result.json
+
+      - name: Run paper tests
+        run: pytest -q tests/test_paper_claim_registry.py
+
+      - name: Record manuscript inventory
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          text = Path("paper/manuscript.md").read_text(encoding="utf-8")
+          report = {
+              "words": len(text.split()),
+              "characters": len(text),
+              "claim_markers": text.count("[C"),
+              "status": "draft_historical_manuscript",
+          }
+          Path("artifacts/paper-evidence-audit/manuscript-inventory.json").write_text(
+              json.dumps(report, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          print(report)
+          PY
+
+      - name: Upload audit and manuscript
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper-evidence-audit-${{ github.run_id }}
+          path: |
+            artifacts/paper-evidence-audit/
+            paper/manuscript.md
+            paper/claim_evidence_registry.json
+            paper/references.bib
+          retention-days: 90
+          if-no-files-found: error
+
+# This workflow checks claim provenance and manuscript consistency. It does not
+# promote historical or prospective evidence levels and does not alter results.
