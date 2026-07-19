@@ -32,11 +32,11 @@ AWAY = "Away FC"
 
 def frames(post_commence: bool = False, missing_consensus: bool = False):
     books = ["b1", "b2", "b3", "b4"]
-    commence = pd.Timestamp("2026-07-19T13:00:00Z")
+    commence = pd.Timestamp("2026-07-19T23:00:00Z")
     times = {
         "s1": pd.Timestamp("2026-07-19T10:00:00Z"),
         "s2": pd.Timestamp("2026-07-19T11:00:00Z"),
-        "s3": pd.Timestamp("2026-07-19T14:00:00Z") if post_commence else pd.Timestamp("2026-07-19T12:00:00Z"),
+        "s3": pd.Timestamp("2026-07-20T00:00:00Z") if post_commence else pd.Timestamp("2026-07-19T12:00:00Z"),
     }
     probs = {
         "s1": np.array([0.45, 0.28, 0.27]),
@@ -121,10 +121,12 @@ def test_exact_feature_order_and_three_snapshot_alignment():
     records, diagnostics = build_shadow_feature_records(ledger, transitions)
     assert len(records) == 4
     assert diagnostics["eligible_chains"] == 4
+    assert diagnostics["unsupported_closing_horizon_chains"] == 0
     assert list(records.columns[:len(NORMAL_FEATURES)]) == list(NORMAL_FEATURES)
     assert records["context_previous_snapshot_id"].eq("s1").all()
     assert records["context_snapshot_id"].eq("s2").all()
     assert records["realized_snapshot_id"].eq("s3").all()
+    assert records["supported_closing_cutoff_hours"].eq(12).all()
     assert records.loc[
         records["bookmaker_key"] == "b1",
         "state_changed_without_provider_update_advance",
