@@ -27,6 +27,8 @@ env:
   REGION: "uk"
   MODEL_ARTIFACT_ID: "8435876486"
   MODEL_ARTIFACT_SHA256: "53c5218fc3a0e20edcfcb7002ee08d76348e8115e590082b824cc0a16a209a37"
+  MATCHED_SHADOW_ACTIVATION_UTC: "2026-07-19T07:00:00Z"
+  MATCHED_SHADOW_FRACTION: "0.05"
 
 jobs:
   collect:
@@ -170,6 +172,15 @@ jobs:
             --output-root artifacts/prospective-shadow \
             --allow-no-supported-chains
 
+      - name: Build timestamped matched-budget shadow challenger
+        if: steps.window.outputs.active == 'true'
+        run: |
+          python scripts/build_matched_budget_shadow.py \
+            --shadow-root artifacts/prospective-shadow \
+            --output-root artifacts/matched-budget-shadow \
+            --activation-utc "$MATCHED_SHADOW_ACTIVATION_UTC" \
+            --fraction "$MATCHED_SHADOW_FRACTION"
+
       - name: Persist latest derived state and per-run manifests
         if: steps.window.outputs.active == 'true'
         shell: bash
@@ -178,11 +189,13 @@ jobs:
           run_root="prospective-data/data/campaign-runs/${GITHUB_RUN_ID}"
           latest_root="prospective-data/data/derived/latest"
           mkdir -p "$run_root" "$latest_root"
-          rm -rf "$latest_root/sequence" "$latest_root/shadow"
+          rm -rf "$latest_root/sequence" "$latest_root/shadow" "$latest_root/matched-budget-shadow"
           cp -a artifacts/prospective-sequence "$latest_root/sequence"
           cp -a artifacts/prospective-shadow "$latest_root/shadow"
+          cp -a artifacts/matched-budget-shadow "$latest_root/matched-budget-shadow"
           cp -a artifacts/prospective-sequence/manifest.json "$run_root/sequence-manifest.json"
           cp -a artifacts/prospective-shadow/manifest.json "$run_root/shadow-manifest.json"
+          cp -a artifacts/matched-budget-shadow/manifest.json "$run_root/matched-budget-shadow-manifest.json"
 
       - name: Commit immutable campaign state
         if: steps.window.outputs.active == 'true'
@@ -209,6 +222,7 @@ jobs:
             artifacts/campaign-run/
             artifacts/prospective-sequence/
             artifacts/prospective-shadow/
+            artifacts/matched-budget-shadow/
           retention-days: 90
           if-no-files-found: warn
 
