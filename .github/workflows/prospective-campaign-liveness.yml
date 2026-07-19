@@ -1,6 +1,13 @@
 name: Prospective Campaign Liveness
 
 on:
+  workflow_run:
+    workflows:
+      - "Prospective Canonical Timing Shadow"
+    types:
+      - completed
+    branches:
+      - main
   push:
     branches:
       - main
@@ -35,6 +42,7 @@ env:
 
 jobs:
   audit:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -128,4 +136,4 @@ jobs:
           fi
 
 # This workflow makes no paid provider request and reads no outcome or closing
-# performance fields. It only checks freshness and immutable-state alignment.
+# performance fields. It runs after the canonical refresh; cron remains fallback.
