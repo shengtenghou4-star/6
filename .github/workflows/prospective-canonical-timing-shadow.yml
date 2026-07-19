@@ -1,6 +1,11 @@
 name: Prospective Canonical Timing Shadow
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/prospective-canonical-timing-shadow.yml"
   workflow_run:
     workflows:
       - "Prospective Sequence Campaign"
