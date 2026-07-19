@@ -165,7 +165,7 @@ jobs:
             --output-root artifacts/prospective-shadow \
             --allow-no-supported-chains
 
-      - name: Persist derived ledgers and shadow state
+      - name: Persist latest derived state and per-run manifests
         if: steps.window.outputs.active == 'true'
         shell: bash
         run: |
@@ -174,10 +174,10 @@ jobs:
           latest_root="prospective-data/data/derived/latest"
           mkdir -p "$run_root" "$latest_root"
           rm -rf "$latest_root/sequence" "$latest_root/shadow"
-          cp -a artifacts/prospective-sequence "$run_root/sequence"
-          cp -a artifacts/prospective-shadow "$run_root/shadow"
           cp -a artifacts/prospective-sequence "$latest_root/sequence"
           cp -a artifacts/prospective-shadow "$latest_root/shadow"
+          cp -a artifacts/prospective-sequence/manifest.json "$run_root/sequence-manifest.json"
+          cp -a artifacts/prospective-shadow/manifest.json "$run_root/shadow-manifest.json"
 
       - name: Commit immutable campaign state
         if: steps.window.outputs.active == 'true'
