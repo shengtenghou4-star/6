@@ -18,7 +18,11 @@ import experiment_011_closing_line_residual as exp11
 import generate_abnormal_action_residuals as residual_gen
 from experiment_002_move_hazard import DOWNLOAD_URL, SERIES_FILES, download, extract_required
 from marketlab.action_shadow import load_shadow_bundle
-from marketlab.action_shadow_schema import ACTION_RESIDUAL_FEATURES, OUTCOMES
+from marketlab.action_shadow_schema import (
+    ACTION_RESIDUAL_FEATURES,
+    CLOSING_RAW_FEATURES,
+    OUTCOMES,
+)
 
 
 RANDOM_SEED = 20260719
@@ -27,6 +31,7 @@ SCORE_COLUMNS = (
     "action_rank_score_for_raw_candidate",
     "residual_uplift",
 )
+DOMAIN_FEATURES = (*CLOSING_RAW_FEATURES, *ACTION_RESIDUAL_FEATURES, *SCORE_COLUMNS)
 
 
 def _predict_delta(models: dict[str, Any], prefix: str, x: np.ndarray) -> np.ndarray:
@@ -63,6 +68,11 @@ def build_historical_reference(
         closing,
         raw_feature_columns,
     )
+    if len(baseline_columns) != len(CLOSING_RAW_FEATURES):
+        raise RuntimeError(
+            "historical closing raw feature width does not match the frozen bundle schema"
+        )
+    baseline_rename = dict(zip(baseline_columns, CLOSING_RAW_FEATURES, strict=True))
     action_columns = baseline_columns + list(ACTION_RESIDUAL_FEATURES)
     raw_x = frame[baseline_columns].to_numpy(float)
     action_x = frame[action_columns].to_numpy(float)
@@ -80,7 +90,10 @@ def build_historical_reference(
         ["match_id", "book_slot", "hours_before_kickoff", *action_columns]
     ].copy()
     output.rename(
-        columns={"hours_before_kickoff": "supported_closing_cutoff_hours"},
+        columns={
+            "hours_before_kickoff": "supported_closing_cutoff_hours",
+            **baseline_rename,
+        },
         inplace=True,
     )
     output["raw_candidate_score"] = raw_expected[row, candidate]
@@ -90,6 +103,9 @@ def build_historical_reference(
         - output["raw_candidate_score"]
     )
     output["domain_group"] = output["match_id"].astype(str)
+    missing = sorted(set(DOMAIN_FEATURES) - set(output.columns))
+    if missing:
+        raise RuntimeError(f"historical reference missing frozen domain features: {missing}")
     return output, {
         "rows": int(len(output)),
         "matches": int(output["match_id"].nunique()),
@@ -103,6 +119,7 @@ def build_historical_reference(
         "closing_price_profile": closing_profile,
         "bundle_id": bundle.bundle_id,
         "bundle_manifest_sha256": bundle.manifest_sha256,
+        "domain_feature_count": len(DOMAIN_FEATURES),
     }
 
 
@@ -238,25 +255,14 @@ def main() -> None:
         prospective["action_rank_score_for_raw_candidate"]
         - prospective["raw_candidate_score"]
     )
+    missing = sorted(set(DOMAIN_FEATURES) - set(prospective.columns))
+    if missing:
+        raise ValueError(f"prospective scores missing frozen domain features: {missing}")
+    for column in DOMAIN_FEATURES:
+        historical[column] = pd.to_numeric(historical[column], errors="coerce")
+        prospective[column] = pd.to_numeric(prospective[column], errors="coerce")
 
-    common_features = [
-        column
-        for column in historical.columns
-        if column in prospective.columns
-        and column
-        not in {
-            "match_id",
-            "book_slot",
-            "domain_group",
-            "supported_closing_cutoff_hours",
-        }
-        and pd.api.types.is_numeric_dtype(historical[column])
-        and pd.api.types.is_numeric_dtype(prospective[column])
-    ]
-    missing_scores = sorted(set(SCORE_COLUMNS) - set(common_features))
-    if missing_scores:
-        raise ValueError(f"score columns missing from domain audit: {missing_scores}")
-
+    common_features = list(DOMAIN_FEATURES)
     rows: list[dict[str, Any]] = []
     cutoffs = sorted(
         set(historical["supported_closing_cutoff_hours"].astype(int))
@@ -294,7 +300,10 @@ def main() -> None:
         column
         for column in common_features
         if historical[column].notna().all() and prospective[column].notna().all()
-    ][:48]
+    ]
+    if len(discriminator_columns) != len(common_features):
+        missing_finite = sorted(set(common_features) - set(discriminator_columns))
+        raise ValueError(f"non-finite frozen domain features: {missing_finite}")
     h_disc = historical[[*discriminator_columns, "domain_group"]].copy()
     p_disc = prospective[[*discriminator_columns, "domain_group"]].copy()
     h_disc["domain_label"] = 0
@@ -350,6 +359,7 @@ def main() -> None:
         },
         "source_archive": source_meta,
         "features_compared": int(len(common_features)),
+        "feature_schema": common_features,
         "domain_discriminator": discriminator,
         "overall_feature_summary": {
             "severe_features": int(severe.sum()),
