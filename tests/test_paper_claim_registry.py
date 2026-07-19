@@ -1,17 +1,20 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 
 from scripts.validate_paper_claims import validate_registry
 
 
 def test_paper_claim_registry_matches_sources() -> None:
-    repo_root = Path(__file__).resolve().parents[1]
     report = validate_registry(
-        repo_root,
-        repo_root / "paper" / "claim_evidence_registry.json",
-        repo_root / "paper" / "manuscript.md",
+        ROOT,
+        ROOT / "paper" / "claim_evidence_registry.json",
+        ROOT / "paper" / "manuscript.md",
     )
     assert report["status"] == "passed"
     assert report["claims_checked"] == 10
@@ -19,9 +22,8 @@ def test_paper_claim_registry_matches_sources() -> None:
 
 
 def test_registry_preserves_prohibited_claim_boundary() -> None:
-    repo_root = Path(__file__).resolve().parents[1]
     registry = json.loads(
-        (repo_root / "paper" / "claim_evidence_registry.json").read_text(
+        (ROOT / "paper" / "claim_evidence_registry.json").read_text(
             encoding="utf-8"
         )
     )
