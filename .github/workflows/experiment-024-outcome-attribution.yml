@@ -8,6 +8,7 @@ on:
       - "scripts/experiment_024_outcome_execution_attribution.py"
       - "tests/test_outcome_execution_attribution.py"
       - "docs/EXPERIMENT_024_PROTOCOL.md"
+      - "docs/EXPERIMENT_024_RESULT.md"
       - ".github/workflows/experiment-024-outcome-attribution.yml"
 
 jobs:
