@@ -1,0 +1,51 @@
+name: Experiment 023 Execution Envelope
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "src/marketlab/execution_envelope*.py"
+      - "scripts/experiment_023_*.py"
+      - "tests/test_execution_envelope.py"
+      - "docs/EXPERIMENT_023_PROTOCOL.md"
+      - ".github/workflows/experiment-023-execution-envelope.yml"
+
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install
+        run: python -m pip install -e ".[dev]"
+      - name: Unit tests
+        run: pytest -q tests/test_execution_envelope.py
+      - name: Run execution break-even envelope audit
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p artifacts/experiment-023
+          python scripts/experiment_023_execution_break_even_envelope.py \
+            --output-root artifacts/experiment-023 \
+            2>&1 | tee artifacts/experiment-023/run.log
+      - name: Upload result evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-023-execution-envelope-${{ github.run_id }}
+          path: |
+            artifacts/experiment-023/result.json
+            artifacts/experiment-023/failure.json
+            artifacts/experiment-023/progress.json
+            artifacts/experiment-023/run.log
+            artifacts/experiment-023/break-even-envelope-summary.csv
+            artifacts/experiment-023/practical-envelope-summary.csv
+            artifacts/experiment-023/execution-prices.csv.gz
+            artifacts/experiment-023/*-policy-before-outcomes.csv.gz
+            artifacts/experiment-023/practical-ledgers/*.csv.gz
+          retention-days: 90
+          if-no-files-found: warn
