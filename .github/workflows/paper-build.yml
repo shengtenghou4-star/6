@@ -21,21 +21,21 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
 
-      - name: Prepare print-safe manuscript source
+      - name: Prepare print-safe empirical source
         run: |
           mkdir -p artifacts/paper
           python scripts/prepare_paper_build.py \
-            --output artifacts/paper/manuscript-build.md
+            --output artifacts/paper/empirical-manuscript-build.md
 
-      - name: Compile manuscript PDF
+      - name: Compile empirical paper PDF
         uses: docker://pandoc/latex:3.1
         with:
           args: >-
-            artifacts/paper/manuscript-build.md
+            artifacts/paper/empirical-manuscript-build.md
             --from=gfm+tex_math_dollars
             --standalone
             --toc
@@ -45,21 +45,39 @@ jobs:
             -V colorlinks=true
             -o artifacts/paper/abnormal-bookmaker-actions.pdf
 
-      - name: Verify compiled artifact
+      - name: Compile methods paper PDF
+        uses: docker://pandoc/latex:3.1
+        with:
+          args: >-
+            paper/methods_note.md
+            --from=gfm+tex_math_dollars
+            --standalone
+            --toc
+            --pdf-engine=xelatex
+            -V geometry:margin=1in
+            -V fontsize=11pt
+            -V colorlinks=true
+            -o artifacts/paper/from-backtest-to-evidence.pdf
+
+      - name: Verify compiled artifacts
         shell: bash
         run: |
           set -euo pipefail
-          test -s artifacts/paper/abnormal-bookmaker-actions.pdf
-          file artifacts/paper/abnormal-bookmaker-actions.pdf | grep -q "PDF document"
-          sha256sum artifacts/paper/abnormal-bookmaker-actions.pdf \
-            | tee artifacts/paper/abnormal-bookmaker-actions.sha256
+          for pdf in \
+            artifacts/paper/abnormal-bookmaker-actions.pdf \
+            artifacts/paper/from-backtest-to-evidence.pdf; do
+            test -s "$pdf"
+            file "$pdf" | grep -q "PDF document"
+            sha256sum "$pdf" >> artifacts/paper/paper-artifacts.sha256
+          done
+          cat artifacts/paper/paper-artifacts.sha256
 
-      - name: Upload paper artifact
+      - name: Upload paper artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: abnormal-bookmaker-actions-paper-${{ github.run_id }}
+          name: research-papers-${{ github.run_id }}
           path: artifacts/paper/
           retention-days: 90
           if-no-files-found: error
 
-# The PDF is a living draft. Compilation does not change any evidence tier.
+# Both PDFs are living research drafts. Compilation does not change evidence tiers.
