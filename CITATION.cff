@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use this research system, cite the repository release and the relevant paper or benchmark profile."
+title: "Football Market Behavior Lab: abnormal-action residuals, falsification and prospective validation"
+type: software
+authors:
+  - alias: "shengtenghou4-star"
+repository-code: "https://github.com/shengtenghou4-star/6"
+url: "https://github.com/shengtenghou4-star/6"
+license: "See repository license and data-source terms"
+version: "0.2.0-beta"
+date-released: "2026-07-19"
+keywords:
+  - bookmaker behavior
+  - market microstructure
+  - residual learning
+  - temporal validation
+  - reproducibility
+  - football odds
+preferred-citation:
+  type: article
+  title: "Abnormal Bookmaker Actions Predict Subsequent Repricing: Residual information in multi-book football odds"
+  authors:
+    - alias: "shengtenghou4-star"
+  year: 2026
+  notes: "Working-paper draft; historical mechanism replicated, prospective transfer pending."
