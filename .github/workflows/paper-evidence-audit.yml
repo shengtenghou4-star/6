@@ -7,8 +7,10 @@ on:
       - "benchmark/reference_submission.json"
       - "scripts/validate_paper_claims.py"
       - "scripts/build_paper_assets.py"
+      - "scripts/prepare_paper_build.py"
       - "tests/test_paper_claim_registry.py"
       - "tests/test_build_paper_assets.py"
+      - "tests/test_prepare_paper_build.py"
       - ".github/workflows/paper-evidence-audit.yml"
       - "docs/EXPERIMENT_*_RESULT.md"
       - "docs/GENERIC_ACTION_SHADOW_BUNDLE_RESULT.md"
@@ -20,8 +22,10 @@ on:
       - "benchmark/reference_submission.json"
       - "scripts/validate_paper_claims.py"
       - "scripts/build_paper_assets.py"
+      - "scripts/prepare_paper_build.py"
       - "tests/test_paper_claim_registry.py"
       - "tests/test_build_paper_assets.py"
+      - "tests/test_prepare_paper_build.py"
       - ".github/workflows/paper-evidence-audit.yml"
       - "docs/EXPERIMENT_*_RESULT.md"
       - "docs/GENERIC_ACTION_SHADOW_BUNDLE_RESULT.md"
@@ -55,12 +59,15 @@ jobs:
         run: |
           python scripts/build_paper_assets.py \
             --output-root artifacts/paper-assets
+          python scripts/prepare_paper_build.py \
+            --output artifacts/paper-assets/manuscript-build.md
 
       - name: Run paper tests
         run: |
           pytest -q \
             tests/test_paper_claim_registry.py \
-            tests/test_build_paper_assets.py
+            tests/test_build_paper_assets.py \
+            tests/test_prepare_paper_build.py
 
       - name: Record manuscript inventory
         run: |
