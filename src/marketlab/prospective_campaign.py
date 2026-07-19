@@ -68,9 +68,10 @@ class SportSelection:
 
 
 def utc_iso(value: datetime) -> str:
+    """Return provider-compatible UTC ISO-8601 without fractional seconds."""
     if value.tzinfo is None:
         value = value.replace(tzinfo=UTC)
-    return value.astimezone(UTC).isoformat(timespec="microseconds").replace("+00:00", "Z")
+    return value.astimezone(UTC).isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
 def campaign_window_active(
@@ -144,7 +145,10 @@ def select_near_event_sports(
         if not rows:
             continue
         # Near events receive more weight while dense leagues still win ties.
-        weighted = sum(3 if row["hours"] <= 18 else 2 if row["hours"] <= 36 else 1 for row in rows)
+        weighted = sum(
+            3 if row["hours"] <= 18 else 2 if row["hours"] <= 36 else 1
+            for row in rows
+        )
         selection = SportSelection(
             sport_key=sport,
             event_count=len(rows),
