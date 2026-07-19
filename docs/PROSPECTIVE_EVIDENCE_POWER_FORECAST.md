@@ -1,6 +1,6 @@
 # Prospective evidence-volume and power forecast
 
-Status: **operational forecast frozen before the first run**.
+Status: **operational forecast frozen before the first decision-grade run**.
 
 ## Purpose
 
@@ -17,11 +17,13 @@ It cannot inspect prospective closing CLV, match outcomes or settlement data, an
 
 ## Forecast model
 
-Candidate, event and cutoff accrual use a Jeffreys-prior gamma-Poisson model with homogeneous arrival rate over the eligible campaign window. Positive raw- and residual-score capacity uses beta-binomial posterior simulation within each cutoff.
+Snapshot ingestion times are grouped into collection cycles. A new cycle begins after a gap of more than one hour, and the remaining exposure is measured in frozen three-hour collection intervals. Candidate, event and cutoff accrual use a Jeffreys-prior gamma-Poisson model per collection cycle. Positive raw- and residual-score capacity uses beta-binomial posterior simulation within each cutoff.
 
 The report uses 20,000 simulations and seed `20260719`.
 
-The forecast does not claim that accrual is truly stationary. Early three-snapshot chain formation may make the first observations conservative, while competition scheduling may make later accrual uneven. Intervals and gate probabilities are operational planning estimates only.
+Fewer than three observed collection cycles are explicitly labelled `insufficient_calibration`; their numerical projections are exploratory and their gate probabilities are not decision-grade. Three to seven cycles are `preliminary`, and eight or more are `operational`.
+
+The forecast does not claim that accrual is stationary. Early three-snapshot chain formation, competition scheduling and event reuse can all make future cycles differ from observed cycles. Intervals and gate probabilities are operational planning estimates only.
 
 ## Frozen Phase 43 volume gates
 
@@ -46,12 +48,12 @@ This constant is used only for planning. It is not a prospective performance est
 
 ## Outputs
 
-- daily candidate/event/snapshot accrual;
+- collection-cycle and daily candidate/event/snapshot accrual;
 - current and projected counts by cutoff;
 - projected exact 5% capacity;
 - probability of meeting every frozen evidence gate;
 - conservative minimum detectable log-CLV lift;
 - bookmaker, snapshot and sport concentration;
-- explicit early warnings for weak cutoffs or positive-score capacity.
+- explicit early warnings for weak cutoffs, positive-score capacity or insufficient forecast calibration.
 
 Scheduled forecasts are written immutably under the `prospective-data` branch. A weak forecast may justify a separately preregistered later campaign, but it cannot extend, alter or reinterpret the current seven-day test.
