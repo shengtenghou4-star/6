@@ -23,8 +23,8 @@ REQUIRED_COLUMNS = (
 class MatchedBudgetPolicy:
     activation_utc: str
     fraction: float = 0.05
-    raw_policy_id: str = "raw_positive_top_5pct_v1"
-    residual_policy_id: str = "residual_positive_top_5pct_v1"
+    raw_policy_id: str = "raw_positive_top_5pct_v2_exact_floor"
+    residual_policy_id: str = "residual_positive_top_5pct_v2_exact_floor"
 
     def validate(self) -> None:
         activation = pd.to_datetime(self.activation_utc, utc=True, errors="coerce")
@@ -32,6 +32,8 @@ class MatchedBudgetPolicy:
             raise ValueError("activation_utc is invalid")
         if not 0.0 < self.fraction <= 1.0:
             raise ValueError("fraction must be in (0, 1]")
+        if not self.raw_policy_id.strip() or not self.residual_policy_id.strip():
+            raise ValueError("policy IDs must be nonempty")
 
 
 def _require_columns(frame: pd.DataFrame) -> None:
@@ -56,7 +58,9 @@ def _select_group(
 ) -> pd.DataFrame:
     group = group.copy()
     group[output_column] = False
-    count = max(1, int(np.floor(len(group) * fraction)))
+    count = int(np.floor(len(group) * fraction))
+    if count <= 0:
+        return group
     eligible = group[group[score_column] > 0].sort_values(
         [score_column, "event_id", "bookmaker_key", "raw_candidate_outcome"],
         ascending=[False, True, True, True],
@@ -64,6 +68,56 @@ def _select_group(
     )
     group.loc[eligible.index[:count], output_column] = True
     return group
+
+
+def _group_quota_diagnostics(
+    frame: pd.DataFrame,
+    *,
+    fraction: float,
+) -> dict[str, Any]:
+    if frame.empty:
+        return {
+            "groups": 0,
+            "under_capacity_groups": 0,
+            "minimum_group_size_for_one_selection": int(np.ceil(1.0 / fraction)),
+            "maximum_raw_selection_fraction": 0.0,
+            "maximum_residual_selection_fraction": 0.0,
+            "raw_fraction_breach_groups": 0,
+            "residual_fraction_breach_groups": 0,
+        }
+    rows: list[dict[str, Any]] = []
+    for _, group in frame.groupby(
+        ["realized_snapshot_id", "supported_closing_cutoff_hours"],
+        sort=False,
+    ):
+        size = int(len(group))
+        raw_count = int(group["raw_matched_selected"].sum())
+        residual_count = int(group["residual_challenger_selected"].sum())
+        rows.append(
+            {
+                "size": size,
+                "quota": int(np.floor(size * fraction)),
+                "raw_fraction": raw_count / size,
+                "residual_fraction": residual_count / size,
+            }
+        )
+    groups = pd.DataFrame(rows)
+    tolerance = 1e-12
+    return {
+        "groups": int(len(groups)),
+        "under_capacity_groups": int((groups["quota"] == 0).sum()),
+        "minimum_group_size_for_one_selection": int(np.ceil(1.0 / fraction)),
+        "maximum_raw_selection_fraction": float(groups["raw_fraction"].max()),
+        "maximum_residual_selection_fraction": float(
+            groups["residual_fraction"].max()
+        ),
+        "raw_fraction_breach_groups": int(
+            (groups["raw_fraction"] > fraction + tolerance).sum()
+        ),
+        "residual_fraction_breach_groups": int(
+            (groups["residual_fraction"] > fraction + tolerance).sum()
+        ),
+    }
 
 
 def build_matched_budget_shadow(
@@ -125,7 +179,11 @@ def build_matched_budget_shadow(
     frame["research_only"] = True
     frame["no_execution"] = True
 
-    raw_selected = frame["raw_matched_selected"].to_numpy(bool) if len(frame) else np.array([], dtype=bool)
+    raw_selected = (
+        frame["raw_matched_selected"].to_numpy(bool)
+        if len(frame)
+        else np.array([], dtype=bool)
+    )
     residual_selected = (
         frame["residual_challenger_selected"].to_numpy(bool)
         if len(frame)
@@ -133,8 +191,14 @@ def build_matched_budget_shadow(
     )
     either = raw_selected | residual_selected
     both = raw_selected & residual_selected
+    quota_diagnostics = _group_quota_diagnostics(frame, fraction=policy.fraction)
+    if quota_diagnostics["raw_fraction_breach_groups"] or quota_diagnostics[
+        "residual_fraction_breach_groups"
+    ]:
+        raise RuntimeError("matched-budget group selection exceeded frozen fraction")
     diagnostics = {
         "policy": asdict(policy),
+        "quota_rule": "exact_floor_without_minimum_one",
         "input_rows": int(len(candidates)),
         "pre_activation_rows_excluded": int(pre_activation.sum()),
         "eligible_rows_after_activation": int(len(frame)),
@@ -150,6 +214,11 @@ def build_matched_budget_shadow(
         "residual_selected_rows": int(residual_selected.sum()),
         "selected_by_both": int(both.sum()),
         "selection_jaccard": float(both.sum() / either.sum()) if either.any() else 1.0,
+        "raw_realized_fraction": float(raw_selected.mean()) if len(frame) else 0.0,
+        "residual_realized_fraction": float(residual_selected.mean())
+        if len(frame)
+        else 0.0,
+        "group_quota_diagnostics": quota_diagnostics,
         "same_candidate_identity_by_construction": True,
         "match_outcomes_used": False,
         "no_execution": True,

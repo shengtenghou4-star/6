@@ -21,6 +21,13 @@ def main() -> None:
     parser.add_argument("--output-root", required=True)
     parser.add_argument("--activation-utc", required=True)
     parser.add_argument("--fraction", type=float, default=0.05)
+    parser.add_argument(
+        "--raw-policy-id", default="raw_positive_top_5pct_v2_exact_floor"
+    )
+    parser.add_argument(
+        "--residual-policy-id",
+        default="residual_positive_top_5pct_v2_exact_floor",
+    )
     args = parser.parse_args()
 
     shadow_root = Path(args.shadow_root)
@@ -31,11 +38,13 @@ def main() -> None:
     policy = MatchedBudgetPolicy(
         activation_utc=args.activation_utc,
         fraction=args.fraction,
+        raw_policy_id=args.raw_policy_id,
+        residual_policy_id=args.residual_policy_id,
     )
 
     if source_manifest.get("status") != "scored":
         manifest = {
-            "schema_version": 1,
+            "schema_version": 2,
             "status": "source_not_ready",
             "source_status": source_manifest.get("status"),
             "source_reason": source_manifest.get("reason"),
@@ -48,6 +57,7 @@ def main() -> None:
                 "fraction": policy.fraction,
                 "raw_policy_id": policy.raw_policy_id,
                 "residual_policy_id": policy.residual_policy_id,
+                "quota_rule": "exact_floor_without_minimum_one",
                 "research_only": True,
                 "no_execution": True,
                 "match_outcomes_used": False,
@@ -68,7 +78,7 @@ def main() -> None:
     ledger_path = output_root / "matched-budget-shadow.csv.gz"
     ledger.to_csv(ledger_path, index=False, compression="gzip")
     manifest = {
-        "schema_version": 1,
+        "schema_version": 2,
         "status": "materialized",
         "source": {
             "shadow_manifest": {
@@ -95,6 +105,8 @@ def main() -> None:
             "match_outcomes_used": False,
             "retroactive_rows_excluded": True,
             "adaptive_thresholds": False,
+            "quota_rule": "exact_floor_without_minimum_one",
+            "v1_minimum_one_evidence_confirmatory": False,
         },
     }
     (output_root / "manifest.json").write_text(

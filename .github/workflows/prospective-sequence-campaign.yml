@@ -27,8 +27,10 @@ env:
   REGION: "uk"
   MODEL_ARTIFACT_ID: "8435876486"
   MODEL_ARTIFACT_SHA256: "53c5218fc3a0e20edcfcb7002ee08d76348e8115e590082b824cc0a16a209a37"
-  MATCHED_SHADOW_ACTIVATION_UTC: "2026-07-19T07:00:00Z"
+  MATCHED_SHADOW_ACTIVATION_UTC: "2026-07-19T11:00:00Z"
   MATCHED_SHADOW_FRACTION: "0.05"
+  MATCHED_SHADOW_RAW_POLICY_ID: "raw_positive_top_5pct_v2_exact_floor"
+  MATCHED_SHADOW_RESIDUAL_POLICY_ID: "residual_positive_top_5pct_v2_exact_floor"
 
 jobs:
   collect:
@@ -179,7 +181,9 @@ jobs:
             --shadow-root artifacts/prospective-shadow \
             --output-root artifacts/matched-budget-shadow \
             --activation-utc "$MATCHED_SHADOW_ACTIVATION_UTC" \
-            --fraction "$MATCHED_SHADOW_FRACTION"
+            --fraction "$MATCHED_SHADOW_FRACTION" \
+            --raw-policy-id "$MATCHED_SHADOW_RAW_POLICY_ID" \
+            --residual-policy-id "$MATCHED_SHADOW_RESIDUAL_POLICY_ID"
 
       - name: Persist latest derived state and per-run manifests
         if: steps.window.outputs.active == 'true'
@@ -230,3 +234,4 @@ jobs:
 # guard exits before secret use or any paid request. Remove the schedule after
 # Phase 36 is closed.
 # Campaign API bounds intentionally use whole-second UTC timestamps.
+# Matched-budget v2 uses an exact floor quota and never forces a minimum-one selection.
