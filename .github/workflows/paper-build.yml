@@ -1,0 +1,65 @@
+name: Paper Build
+
+on:
+  pull_request:
+    paths:
+      - "paper/**"
+      - "scripts/prepare_paper_build.py"
+      - ".github/workflows/paper-build.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "paper/**"
+      - "scripts/prepare_paper_build.py"
+      - ".github/workflows/paper-build.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare print-safe manuscript source
+        run: |
+          mkdir -p artifacts/paper
+          python scripts/prepare_paper_build.py \
+            --output artifacts/paper/manuscript-build.md
+
+      - name: Compile manuscript PDF
+        uses: docker://pandoc/latex:3.1
+        with:
+          args: >-
+            artifacts/paper/manuscript-build.md
+            --from=gfm+tex_math_dollars
+            --standalone
+            --toc
+            --pdf-engine=xelatex
+            -V geometry:margin=1in
+            -V fontsize=11pt
+            -V colorlinks=true
+            -o artifacts/paper/abnormal-bookmaker-actions.pdf
+
+      - name: Verify compiled artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s artifacts/paper/abnormal-bookmaker-actions.pdf
+          file artifacts/paper/abnormal-bookmaker-actions.pdf | grep -q "PDF document"
+          sha256sum artifacts/paper/abnormal-bookmaker-actions.pdf \
+            | tee artifacts/paper/abnormal-bookmaker-actions.sha256
+
+      - name: Upload paper artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: abnormal-bookmaker-actions-paper-${{ github.run_id }}
+          path: artifacts/paper/
+          retention-days: 90
+          if-no-files-found: error
+
+# The PDF is a living draft. Compilation does not change any evidence tier.

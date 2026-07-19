@@ -1,0 +1,112 @@
+name: Paper Evidence Audit
+
+on:
+  pull_request:
+    paths:
+      - "paper/**"
+      - "benchmark/reference_submission.json"
+      - "scripts/validate_paper_claims.py"
+      - "scripts/build_paper_assets.py"
+      - "scripts/prepare_paper_build.py"
+      - "tests/test_paper_claim_registry.py"
+      - "tests/test_build_paper_assets.py"
+      - "tests/test_prepare_paper_build.py"
+      - ".github/workflows/paper-evidence-audit.yml"
+      - "docs/EXPERIMENT_*_RESULT.md"
+      - "docs/GENERIC_ACTION_SHADOW_BUNDLE_RESULT.md"
+  push:
+    branches:
+      - main
+    paths:
+      - "paper/**"
+      - "benchmark/reference_submission.json"
+      - "scripts/validate_paper_claims.py"
+      - "scripts/build_paper_assets.py"
+      - "scripts/prepare_paper_build.py"
+      - "tests/test_paper_claim_registry.py"
+      - "tests/test_build_paper_assets.py"
+      - "tests/test_prepare_paper_build.py"
+      - ".github/workflows/paper-evidence-audit.yml"
+      - "docs/EXPERIMENT_*_RESULT.md"
+      - "docs/GENERIC_ACTION_SHADOW_BUNDLE_RESULT.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install
+        run: python -m pip install -e ".[dev]"
+
+      - name: Validate claim registry
+        run: |
+          mkdir -p artifacts/paper-evidence-audit
+          python scripts/validate_paper_claims.py \
+            --output artifacts/paper-evidence-audit/result.json
+
+      - name: Build deterministic paper assets
+        run: |
+          mkdir -p artifacts/paper-assets
+          python scripts/build_paper_assets.py \
+            --output-root artifacts/paper-assets
+          python scripts/prepare_paper_build.py \
+            --output artifacts/paper-assets/manuscript-build.md
+
+      - name: Run paper tests
+        shell: bash
+        run: |
+          set -o pipefail
+          pytest -q \
+            tests/test_paper_claim_registry.py \
+            tests/test_build_paper_assets.py \
+            tests/test_prepare_paper_build.py \
+            --junitxml=artifacts/paper-evidence-audit/pytest.xml \
+            2>&1 | tee artifacts/paper-evidence-audit/pytest.log
+
+      - name: Record manuscript inventory
+        if: always()
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          text = Path("paper/manuscript.md").read_text(encoding="utf-8")
+          report = {
+              "words": len(text.split()),
+              "characters": len(text),
+              "claim_markers": text.count("[C"),
+              "status": "draft_historical_manuscript",
+          }
+          Path("artifacts/paper-evidence-audit/manuscript-inventory.json").write_text(
+              json.dumps(report, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          print(report)
+          PY
+
+      - name: Upload audit and manuscript
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper-evidence-audit-${{ github.run_id }}
+          path: |
+            artifacts/paper-evidence-audit/
+            artifacts/paper-assets/
+            paper/manuscript.md
+            paper/claim_evidence_registry.json
+            paper/references.bib
+          retention-days: 90
+          if-no-files-found: error
+
+# This workflow checks claim provenance and manuscript consistency. It does not
+# promote historical or prospective evidence levels and does not alter results.

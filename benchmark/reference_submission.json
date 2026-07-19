@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "submission_id": "football-market-behavior-lab-historical-v1",
+  "domain_profile": "football-1x2-multi-book-v1",
+  "evidence_tier": "replicated_historical",
+  "model": {
+    "model_id": "generic-action-shadow-v1-8bb898c3c067",
+    "code_ref": "repository-main-plus-experiments-019-through-025",
+    "artifact_sha256": "53c5218fc3a0e20edcfcb7002ee08d76348e8115e590082b824cc0a16a209a37"
+  },
+  "data": {
+    "opportunities": 59816,
+    "entities": 18072,
+    "agents": 8,
+    "horizons": 4,
+    "test_start": "2016-09-01",
+    "test_end": "2016-11-19"
+  },
+  "controls": {
+    "chronology_locked": true,
+    "candidate_identity_fixed": true,
+    "future_targets_loaded_after_selection": true,
+    "same_agent_future_target": true,
+    "post_event_fields_forbidden": true
+  },
+  "task_b": {
+    "standardized_uplift_slope": 0.00443,
+    "cluster_ci_low": 0.003316,
+    "cluster_ci_high": 0.005515,
+    "placebo_replicates": 4000,
+    "placebo_upper_tail_p": 0.00025,
+    "top_minus_bottom": 0.014581
+  },
+  "distribution": {
+    "positive_agents": 8,
+    "total_agents": 8,
+    "positive_instruments": 3,
+    "total_instruments": 3,
+    "positive_horizons": 4,
+    "total_horizons": 4,
+    "leave_one_agent_out_min_ci_low": 0.002493
+  },
+  "economic_diagnostic": {
+    "raw_roi": -0.00747,
+    "residual_roi": 0.00565,
+    "paired_ci_low_per_opportunity": -0.0015619,
+    "paired_ci_high_per_opportunity": 0.0026306,
+    "positive_execution_cells": 60,
+    "total_execution_cells": 64,
+    "execution_validated": false
+  },
+  "prospective_status": "in_progress",
+  "prohibited_claims_acknowledged": true
+}

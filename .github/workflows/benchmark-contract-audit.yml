@@ -1,0 +1,67 @@
+name: Benchmark Contract Audit
+
+on:
+  pull_request:
+    paths:
+      - "benchmark/**"
+      - "scripts/validate_benchmark_submission.py"
+      - "tests/test_benchmark_submission.py"
+      - ".github/workflows/benchmark-contract-audit.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "benchmark/**"
+      - "scripts/validate_benchmark_submission.py"
+      - "tests/test_benchmark_submission.py"
+      - ".github/workflows/benchmark-contract-audit.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install
+        run: python -m pip install -e ".[dev]"
+
+      - name: Validate reference submission
+        run: |
+          mkdir -p artifacts/benchmark-contract-audit
+          python scripts/validate_benchmark_submission.py \
+            benchmark/reference_submission.json \
+            --output artifacts/benchmark-contract-audit/reference-report.json
+
+      - name: Run benchmark tests
+        shell: bash
+        run: |
+          set -o pipefail
+          pytest -q tests/test_benchmark_submission.py \
+            --junitxml=artifacts/benchmark-contract-audit/pytest.xml \
+            2>&1 | tee artifacts/benchmark-contract-audit/pytest.log
+
+      - name: Upload contract evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-contract-audit-${{ github.run_id }}
+          path: |
+            artifacts/benchmark-contract-audit/
+            benchmark/SPEC.md
+            benchmark/submission.schema.json
+            benchmark/reference_submission.json
+          retention-days: 90
+          if-no-files-found: error
+
+# The benchmark keeps mechanism, economic and prospective evidence tiers
+# separate. A score file cannot promote itself without satisfying the contract.

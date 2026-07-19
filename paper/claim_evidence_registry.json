@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "paper_id": "abnormal-bookmaker-action-residuals-v0.1",
+  "status": "historical_manuscript_with_prospective_section_pending",
+  "claims": [
+    {
+      "id": "C01_sample_scale",
+      "claim": "The core historical matched-candidate universe contains 59,816 opportunities across 18,072 matches.",
+      "evidence_level": "replicated_historical",
+      "source": "docs/EXPERIMENT_019_RESULT.md",
+      "required_literals": ["59,816 opportunities", "18,072 unique matches"]
+    },
+    {
+      "id": "C02_placebo",
+      "claim": "Correct match-specific residual alignment beats 4,000 baseline-preserving circular-shift placebos for selected and incremental closing log-CLV, with empirical upper-tail p=0.00025.",
+      "evidence_level": "replicated_historical",
+      "source": "docs/EXPERIMENT_019_RESULT.md",
+      "required_literals": ["4,000 fixed-seed replicates", "p-value: **0.00025**", "beat all 4,000"]
+    },
+    {
+      "id": "C03_dose_response",
+      "claim": "A one-standard-deviation increase in residual uplift is associated with +0.004430 same-book closing log-CLV, with event-cluster 95% interval [+0.003316,+0.005515].",
+      "evidence_level": "replicated_historical",
+      "source": "docs/EXPERIMENT_021_RESULT.md",
+      "required_literals": ["+0.004430", "[+0.003316, +0.005515]"]
+    },
+    {
+      "id": "C04_broad_heterogeneity",
+      "claim": "The closing log-CLV slope is positive for all eight tested bookmakers, all three selected outcomes, and all four historical cutoffs; every leave-one-book-out lower confidence bound remains above zero.",
+      "evidence_level": "replicated_historical",
+      "source": "docs/EXPERIMENT_022_RESULT.md",
+      "required_literals": ["positive for all eight bookmakers", "positive for every raw-selected outcome", "positive at every cutoff", "lower bound above zero"]
+    },
+    {
+      "id": "C05_matched_return",
+      "claim": "At matched 5% capacity, the residual policy records +0.565% historical ROI versus -0.747% for the raw reference, but both standalone and paired uncertainty intervals cross zero.",
+      "evidence_level": "historical_diagnostic",
+      "source": "docs/EXPERIMENT_017_RESULT.md",
+      "required_literals": ["ROI: **+0.565%**", "ROI: **-0.747%**", "confidence interval did not clear zero"]
+    },
+    {
+      "id": "C06_execution",
+      "claim": "Residual-minus-raw point return is positive in 60 of 64 frozen execution cells, yet no preregistered practical envelope clears paired uncertainty and adversarial rejection removes standalone profitability.",
+      "evidence_level": "historical_diagnostic",
+      "source": "docs/EXPERIMENT_023_RESULT.md",
+      "required_literals": ["60 of 64", "every paired confidence interval crossed zero", "adversarial rejection mechanisms erased it"]
+    },
+    {
+      "id": "C07_outcome_concentration",
+      "claim": "Historical practical-envelope return uplift is positive for home in 4/4 mechanisms, draw in 0/4, and away in 1/4; removing home makes uplift negative in three of four mechanisms.",
+      "evidence_level": "post_hoc_historical_diagnostic",
+      "source": "docs/EXPERIMENT_024_RESULT.md",
+      "required_literals": ["home incremental point return positive in 4/4", "draw positive in 0/4", "away positive in 1/4", "negative in three of four"]
+    },
+    {
+      "id": "C08_clv_return_bridge",
+      "claim": "Residual standalone closing-line relative value is positive with bootstrap lower bounds above zero in all 12 outcome-by-mechanism cells, while away closing-value uplift often fails to become realized return.",
+      "evidence_level": "post_hoc_historical_diagnostic",
+      "source": "docs/EXPERIMENT_025_RESULT.md",
+      "required_literals": ["all four mechanisms", "12 outcome × mechanism", "sign divergence in three of four mechanisms"]
+    },
+    {
+      "id": "C09_domain_shift",
+      "claim": "The prospective adapter exhibits material timing-support and peer-panel breadth shifts, motivating separately activated parallel adapters rather than retroactive alteration of the original stream.",
+      "evidence_level": "executed_outcome_blind_audit",
+      "source": "docs/EXPERIMENT_020_RESULT.md",
+      "required_literals": ["two material structural mismatches", "peer-book breadth", "exact cutoff timing"]
+    },
+    {
+      "id": "C10_bundle_integrity",
+      "claim": "The prospective shadow bundle contains twelve bookmaker-identity-free models with pinned runtime and model checksums, and emits research-only scores for fixed bookmaker/outcome identities.",
+      "evidence_level": "executed_infrastructure",
+      "source": "docs/GENERIC_ACTION_SHADOW_BUNDLE_RESULT.md",
+      "required_literals": ["twelve bookmaker-identity-free models", "research_only = true", "no_execution = true"]
+    }
+  ],
+  "prohibited_claims_until_new_evidence": [
+    "stable realized profit",
+    "live execution readiness",
+    "scalable account capacity",
+    "prospective transfer validated",
+    "home-only strategy validated"
+  ]
+}
