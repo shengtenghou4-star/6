@@ -1,0 +1,48 @@
+{
+  "alignment": {
+    "adapters": {
+      "canonical_timing": {
+        "available": false
+      },
+      "support_repaired": {
+        "aligned_to_original_shadow": true,
+        "available": true,
+        "output_candidate_rows": 0,
+        "source_score_sha256": "bac819fda33ea1a735163cd80557c86ec7a6bd830777ea2e9f0ef77d7d6ee6f1",
+        "status": "no_post_activation_rows"
+      }
+    },
+    "quote_hash_aligned": true,
+    "sequence_quote_sha256": "fc51b31811d85891413918a338d90db4e75e4d692b518a90640991e6f243d3bb",
+    "sequence_transition_sha256": "f576cf06da9051002c849112e350cbd4583d0eb5764b78352ff25386967d0fdc",
+    "shadow_per_book_score_sha256": "bac819fda33ea1a735163cd80557c86ec7a6bd830777ea2e9f0ef77d7d6ee6f1",
+    "shadow_quote_sha256": "fc51b31811d85891413918a338d90db4e75e4d692b518a90640991e6f243d3bb",
+    "shadow_transition_sha256": "f576cf06da9051002c849112e350cbd4583d0eb5764b78352ff25386967d0fdc",
+    "transition_hash_aligned": true
+  },
+  "campaign": {
+    "active": true,
+    "end_utc": "2026-07-26T06:30:00+00:00",
+    "stale_after_hours": 4.5,
+    "start_utc": "2026-07-19T06:00:00+00:00"
+  },
+  "checked_at_utc": "2026-07-19T15:05:29.238336+00:00",
+  "failures": [],
+  "forbidden_true_claims": [],
+  "freshness": {
+    "fresh_within_threshold": true,
+    "latest_snapshot_age_hours": 4.0851896225,
+    "latest_snapshot_utc": "2026-07-19T11:00:22.555695+00:00",
+    "snapshot_directories": 20
+  },
+  "inputs": {
+    "canonical_timing_manifest": "prospective-data/data/derived/latest/canonical-timing-shadow/manifest.json",
+    "sequence_manifest": "prospective-data/data/derived/latest/sequence/manifest.json",
+    "shadow_manifest": "prospective-data/data/derived/latest/shadow/manifest.json",
+    "support_repaired_manifest": "prospective-data/data/derived/latest/support-repaired-shadow/manifest.json"
+  },
+  "outcome_blind": true,
+  "schema_version": 1,
+  "status": "healthy",
+  "warnings": []
+}
