@@ -1,0 +1,82 @@
+{
+  "diagnostics": {
+    "bookmakers_seen": 42,
+    "events_seen": 2,
+    "invalid_bookmaker_update_times": 0,
+    "invalid_commence_times": 0,
+    "invalid_decimal_prices": 0,
+    "invalid_market_update_times": 0,
+    "malformed_bookmakers": 0,
+    "malformed_events": 0,
+    "malformed_markets": 0,
+    "malformed_outcomes": 0,
+    "markets_seen": 48,
+    "normalized_rows": 144,
+    "outcomes_seen": 144
+  },
+  "endpoint": "/v4/sports/soccer_sweden_allsvenskan/odds",
+  "http_status": 200,
+  "immutability": "directory creation is exclusive; reruns never overwrite an existing snapshot",
+  "ingested_at_utc": "2026-07-19T19:54:24.159321Z",
+  "normalized": {
+    "fields": [
+      "provider",
+      "snapshot_ingested_at_utc",
+      "event_id",
+      "sport_key",
+      "sport_title",
+      "commence_time",
+      "commence_time_valid",
+      "home_team",
+      "away_team",
+      "bookmaker_key",
+      "bookmaker_title",
+      "bookmaker_last_update",
+      "bookmaker_last_update_valid",
+      "market_key",
+      "market_last_update",
+      "market_last_update_valid",
+      "outcome_name",
+      "outcome_description",
+      "price_decimal",
+      "price_valid_decimal",
+      "point",
+      "point_present",
+      "outcome_link",
+      "outcome_sid"
+    ],
+    "path": "normalized-outcomes.csv",
+    "rows": 144,
+    "unique_bookmakers": 21,
+    "unique_events": 2,
+    "unique_markets": 2
+  },
+  "provider": "the_odds_api_v4",
+  "raw": {
+    "bytes": 12136,
+    "path": "raw-response.json",
+    "sha256": "ea4445050b1cc2b96f0ade17c5b52fb3c1ff6d6fd55bb032c6276ebf93384b38"
+  },
+  "request": {
+    "parameters": {
+      "commenceTimeFrom": "2026-07-19T19:54:23Z",
+      "commenceTimeTo": "2026-07-22T07:54:23Z",
+      "dateFormat": "iso",
+      "markets": "h2h",
+      "oddsFormat": "decimal",
+      "regions": "uk"
+    },
+    "sport": "soccer_sweden_allsvenskan"
+  },
+  "response_headers": {
+    "content-type": "application/json; charset=utf-8",
+    "quota": {
+      "x-requests-last": "1",
+      "x-requests-remaining": "472",
+      "x-requests-used": "28"
+    }
+  },
+  "response_url_without_api_key": "https://api.the-odds-api.com/v4/sports/soccer_sweden_allsvenskan/odds?markets=h2h&oddsFormat=decimal&dateFormat=iso&regions=uk&commenceTimeFrom=2026-07-19T19%3A54%3A23Z&commenceTimeTo=2026-07-22T07%3A54%3A23Z",
+  "schema_version": 1,
+  "timing_note": "ingested_at_utc is collector time; bookmaker/market last_update fields are preserved separately when supplied by the provider"
+}
