@@ -109,6 +109,13 @@ def test_rejects_invalid_observation_close_commence_chronology() -> None:
         attach_closing_clv(candidates, closing)
 
 
+def test_missing_exact_closing_target_is_rejected() -> None:
+    candidates, closing = fixture()
+    closing = closing.iloc[1:].copy()
+    with pytest.raises(ValueError, match="missing exact closing targets"):
+        attach_closing_clv(candidates, closing)
+
+
 def test_undersized_snapshot_cutoff_groups_are_preserved_but_not_traded() -> None:
     candidates, closing = fixture(n_events=5, snapshots=("s1",))
     attached = attach_closing_clv(candidates, closing)
