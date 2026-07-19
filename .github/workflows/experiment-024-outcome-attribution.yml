@@ -1,0 +1,50 @@
+name: Experiment 024 Outcome Execution Attribution
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "src/marketlab/outcome_execution_attribution.py"
+      - "scripts/experiment_024_outcome_execution_attribution.py"
+      - "tests/test_outcome_execution_attribution.py"
+      - "docs/EXPERIMENT_024_PROTOCOL.md"
+      - ".github/workflows/experiment-024-outcome-attribution.yml"
+
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install
+        run: python -m pip install -e ".[dev]"
+      - name: Unit tests
+        run: pytest -q tests/test_outcome_execution_attribution.py
+      - name: Run outcome execution attribution
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p artifacts/experiment-024
+          python scripts/experiment_024_outcome_execution_attribution.py \
+            --output-root artifacts/experiment-024 \
+            --bootstrap-replicates 1000 \
+            2>&1 | tee artifacts/experiment-024/run.log
+      - name: Upload result evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-024-outcome-attribution-${{ github.run_id }}
+          path: |
+            artifacts/experiment-024/result.json
+            artifacts/experiment-024/failure.json
+            artifacts/experiment-024/progress.json
+            artifacts/experiment-024/run.log
+            artifacts/experiment-024/outcome-attribution.csv
+            artifacts/experiment-024/execution-prices.csv.gz
+            artifacts/experiment-024/*-policy-before-outcomes.csv.gz
+          retention-days: 90
+          if-no-files-found: warn
