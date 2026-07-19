@@ -13,7 +13,7 @@ The historical evidence supports a real **repricing-information mechanism**:
 - the relationship is positive across every tested cutoff, selected outcome and bookmaker, and survives removing any one bookmaker;
 - related effects transfer to independent timestamped data and unseen-book diagnostics.
 
-The project has **not** established stable realized profit, executable scalability, account capacity or live-betting readiness. Residual-minus-raw execution point return is broadly positive across frozen friction envelopes, but the small practical return is concentrated in home-selected opportunities, disappears under adversarial rejection, and remains statistically uncertain.
+The project has **not** established stable realized profit, executable scalability, account capacity or live-betting readiness. Residual-minus-raw execution point return is broadly positive across frozen friction envelopes, but it is thin and statistically uncertain. Historical realized return concentrates in home-selected opportunities, while closing-line relative value remains positive for residual selections across home, draw and away; outcome realization therefore materially distorts the conversion from price quality to observed return.
 
 The decisive next evidence is an untouched seven-day prospective campaign running from `2026-07-19T06:00:00Z` to `2026-07-26T06:30:00Z`.
 
@@ -28,7 +28,8 @@ The decisive next evidence is an untouched seven-day prospective campaign runnin
 | Effect is broadly distributed | Positive slope for 8/8 bookmakers, 3/3 selected outcomes and 4/4 cutoffs; every leave-one-book-out lower bound above zero | [Experiment 022](docs/EXPERIMENT_022_RESULT.md) |
 | Historical matched-budget return | Residual policy `+0.565%` ROI versus raw reference `-0.747%`, but uncertainty crosses zero | [Experiment 017](docs/EXPERIMENT_017_RESULT.md) |
 | Execution robustness | Residual-minus-raw point return positive in 60/64 exact envelopes; ordinary fill loss leaves a thin positive margin, adversarial rejection erases it, and the validation gate fails | [Experiment 023](docs/EXPERIMENT_023_RESULT.md) |
-| Execution outcome attribution | Home point return positive in 4/4 practical mechanisms, draw in 0/4 and away in 1/4; removing home makes the point lift negative in 3/4 | [Experiment 024](docs/EXPERIMENT_024_RESULT.md) |
+| Execution outcome attribution | Home realized point return positive in 4/4 practical mechanisms, draw in 0/4 and away in 1/4; removing home makes the point lift negative in 3/4 | [Experiment 024](docs/EXPERIMENT_024_RESULT.md) |
+| Price-quality to return bridge | Residual closing-line relative value positive with lower bounds above zero in all 12 outcome × mechanism cells; away price-quality point lift is positive in 4/4 despite realized lift in only 1/4 | [Experiment 025](docs/EXPERIMENT_025_RESULT.md) |
 | Untouched prospective transfer | Original and separately activated challenger evaluations are in progress | [Phase 36 campaign](docs/PROSPECTIVE_MATCHED_BUDGET_SHADOW.md) |
 | Stable profit and live execution | **Not established** | No authorization follows from this repository |
 
