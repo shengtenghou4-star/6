@@ -1,88 +1,70 @@
 # Project asset multiplication map
 
-The project should produce several distinct assets from one evidence base without exaggerating any claim.
+One evidence base now supports seven distinct assets without presenting them as seven independent discoveries.
 
-## Asset 1 — Empirical research paper
+## Maturity dashboard
 
-**Product:** `paper/manuscript.md`  
-**Audience:** sports analytics, forecasting, market efficiency and applied ML researchers  
-**Core claim:** abnormal bookmaker-action residuals contain replicated historical information about later same-book repricing  
-**Missing input:** final prospective result block
+| Asset | Product | Maturity | Usable now | Main blocker |
+|---|---|---:|---|---|
+| Empirical paper | `paper/manuscript.md` | 90% | Working paper and reviewer circulation | Prospective result and external review |
+| Methods paper | `paper/methods_note.md` | 85% | Methods preprint draft | External review and real second domain |
+| Open benchmark | `benchmark/` | 90% | Executable Beta | Real empirical profile and hosted leaderboard |
+| Reproducibility challenge | review packet + form | 95% | Send now | Completed independent report |
+| Portfolio case study | `docs/PORTFOLIO_CASE_STUDY.md` | 98% | Resume, GitHub and interviews | Personal formatting only |
+| Domain-transfer program | `docs/DOMAIN_TRANSFER_BLUEPRINTS.md` | 55% | Concrete research plans | Independent real data |
+| Competition package | `docs/COMPETITION_SUBMISSION_KIT.md` | 90% | Core narrative and demo plan | Named-venue formatting and final visuals |
 
-This is the flagship output because it contains the strongest quantitative contribution.
+## 1. Empirical research paper
 
-## Asset 2 — Falsification-first methods note
+The complete historical manuscript includes mechanism, placebo, dose response, heterogeneity, matched return, execution, attribution, limitations and a reserved prospective block. `paper/claim_evidence_registry.json` binds the important statements to result files.
 
-**Product:** `docs/METHODS_NOTE_PROSPECTUS.md`  
-**Audience:** applied ML and reproducibility communities  
-**Core claim:** mechanism, economic conversion and execution require separate evidence layers; fixed-identity residual learning and structure-preserving placebos reduce common backtest errors
+It is mature enough for working-paper circulation. The preferred final submission should wait for the frozen campaign result and one independent review.
 
-This asset should not present the football result as a second independent discovery. The contribution is the protocol.
+## 2. Falsification-first methods paper
 
-## Asset 3 — Open benchmark
+The former prospectus is now `paper/methods_note.md`, a complete manuscript with its own registry, validator, tests and PDF build. Its contribution is the evidence architecture: chronology, fixed identity, structure-preserving falsification, threshold-free analysis, separated endpoints, parallel repair and immutable future closure.
 
-**Product:** `benchmark/`  
-**Audience:** external model builders, reviewers and competitions  
-**Core object:** Market Action Residual Benchmark (MARB)  
-**Current state:** specification, schema, reference submission and validator implemented
+The football project is a worked example; the synthetic profile tests software behavior. A real independently sourced second domain is the main missing upgrade.
 
-The benchmark can produce external recognition even when the historical empirical result is disputed, because contributors can test the same fixed-identity question on another source or domain.
+## 3. Open benchmark
 
-## Asset 4 — Reproducibility and audit challenge
+MARB now contains a formal specification, quickstart, profile template, submission guide, schema, semantic validator, historical reference, synthetic profile, catalog and CI tier checks.
 
-**Product:** `docs/EXTERNAL_REVIEW_PACKET.md`  
-**Audience:** professors, researchers, open-source reviewers and technically strong practitioners  
-**Ask:** reproduce a claim, propose a falsification, or submit another benchmark profile
+It is a functional research Benchmark Beta, not yet a hosted competition platform. The next maturity step is a real external profile.
 
-A narrow independent criticism is more valuable than a generic endorsement. The review packet makes the request concrete and bounded.
+## 4. Reproducibility and audit challenge
 
-## Asset 5 — Portfolio-grade engineering case study
+`docs/EXTERNAL_REVIEW_PACKET.md` and `docs/ADVERSARIAL_REVIEW_FORM.md` provide a thirty-minute audit path, reproduction commands, severity levels and a structured verdict. The package is ready; the remaining input is an actual external reviewer.
 
-**Product:** repository workflows, immutable evidence branch, claim registry and audit contracts  
-**Audience:** data science, ML engineering, quantitative research and research-infrastructure employers  
-**Demonstrated capability:**
+## 5. Portfolio case study
 
-- multi-stage empirical research;
-- leakage-aware temporal data engineering;
-- model serialization and provenance;
-- adversarial validation;
-- prospective workflow orchestration;
-- honest negative-result handling;
-- machine-checkable claim governance.
+`docs/PORTFOLIO_CASE_STUDY.md` includes architecture, metrics, role-specific positioning, resume bullets, interview story, technical prompts and limitations. It is immediately usable after personal formatting.
 
-This framing is stronger than presenting the repository as a betting bot.
+## 6. Domain-transfer program
 
-## Asset 6 — Domain-transfer research program
+`docs/DOMAIN_TRANSFER_BLUEPRINTS.md` converts prediction markets, cross-exchange crypto, travel pricing and insurance quote panels into explicit MARB designs. Prediction markets are the recommended first real replication.
 
-**Product:** future MARB profiles  
-**Candidate domains:** prediction markets, cross-exchange crypto pricing, insurance quote panels, travel pricing panels  
-**Status:** research direction only
+This direction is operationally specified but cannot mature empirically without new data collected under a frozen profile.
 
-The transferable abstraction is:
+## 7. Competition or award package
 
-> model an agent's expected reaction to its market, measure the abnormal reaction, and test whether that residual predicts the agent's own later price.
+`docs/COMPETITION_SUBMISSION_KIT.md` contains the problem statement, 200-word abstract, 90-second pitch, three-minute demo, judge answers, reproduction commands and integrity checklist. Only venue-specific formatting, slides and video remain.
 
-No cross-domain claim exists until a new profile passes its own chronology and identity audit.
+## Shared release infrastructure
 
-## Asset 7 — Competition or award submission
+The assets are coordinated through:
 
-A strong submission package should contain:
+- `docs/RELEASE_AND_PUBLICATION_CHECKLIST.md`;
+- `CITATION.cff`;
+- dual-paper PDF builds;
+- two claim registries;
+- benchmark catalog and semantic validation;
+- the integrated `Research Assets Audit` workflow.
 
-1. a five-sentence problem statement;
-2. one mechanism figure;
-3. one falsification figure;
-4. one evidence hierarchy table;
-5. a reproducible command;
-6. a clear negative-result paragraph;
-7. a link to the paper and benchmark contract.
+## Remaining work
 
-The differentiator is not a flashy ROI number. It is that the project found a real historical mechanism, attacked it repeatedly, preserved failed economic gates and launched an untouched prospective test.
+**Internal:** final visuals, venue formatting, author metadata and release archive.  
+**Elapsed evidence:** prospective campaign close and final empirical tier.  
+**External:** independent review, real second-domain replication and formal peer/competition decisions.
 
-## Immediate completion order
-
-1. Finish and audit the historical manuscript.
-2. Produce a compiled paper artifact after the source audit passes.
-3. Add an automated evidence figure/table builder.
-4. Run an independent adversarial review against the manuscript and benchmark contract.
-5. At campaign close, update only the reserved prospective section and evidence tier.
-6. Package the paper, benchmark and review challenge for external circulation.
+The packaging work is now close to saturation. Further maturity depends mainly on new evidence and independent scrutiny rather than more internal prose.

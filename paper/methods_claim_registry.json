@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "paper_id": "from-backtest-to-evidence-v0.9",
+  "status": "complete_methods_manuscript_external_review_pending",
+  "claims": [
+    {
+      "id": "M01_PLACEBO",
+      "evidence_level": "replicated_historical",
+      "source": "docs/EXPERIMENT_019_RESULT.md",
+      "required_literals": [
+        "4,000 fixed-seed replicates",
+        "empirical upper-tail p-value: **0.00025**",
+        "beat all 4,000"
+      ]
+    },
+    {
+      "id": "M02_DOSE",
+      "evidence_level": "replicated_historical",
+      "source": "docs/EXPERIMENT_021_RESULT.md",
+      "required_literals": [
+        "+0.004430",
+        "[+0.003316, +0.005515]",
+        "dose_response_mechanism_passed"
+      ]
+    },
+    {
+      "id": "M03_DISTRIBUTION",
+      "evidence_level": "replicated_historical",
+      "source": "docs/EXPERIMENT_022_RESULT.md",
+      "required_literals": [
+        "positive for all eight bookmakers",
+        "positive for every raw-selected outcome",
+        "positive at every cutoff",
+        "lower bound above zero"
+      ]
+    },
+    {
+      "id": "M04_ECONOMICS",
+      "evidence_level": "historical_diagnostic",
+      "source": "docs/EXPERIMENT_017_RESULT.md",
+      "required_literals": [
+        "ROI: **-0.747%**",
+        "ROI: **+0.565%**",
+        "confidence interval did not clear zero"
+      ]
+    },
+    {
+      "id": "M05_EXECUTION",
+      "evidence_level": "historical_diagnostic",
+      "source": "docs/EXPERIMENT_023_RESULT.md",
+      "required_literals": [
+        "60 of 64",
+        "every paired confidence interval crossed zero",
+        "adversarial rejection mechanisms erased it"
+      ]
+    },
+    {
+      "id": "M06_DOMAIN_SHIFT",
+      "evidence_level": "executed_outcome_blind_audit",
+      "source": "docs/EXPERIMENT_020_RESULT.md",
+      "required_literals": [
+        "two material structural mismatches",
+        "peer-book breadth",
+        "exact cutoff timing"
+      ]
+    },
+    {
+      "id": "M07_SYNTHETIC",
+      "evidence_level": "executed_synthetic_contract_test",
+      "source": "benchmark/SYNTHETIC_PROFILE_RESULT.md",
+      "required_literals": [
+        "+0.120512",
+        "[+0.107430,+0.133668]",
+        "1,000 within-stratum circular-shift placebos",
+        "Execution validation remained false"
+      ]
+    }
+  ],
+  "prohibited_claims": [
+    "universal causal identification",
+    "stable realized profit",
+    "live execution readiness",
+    "validated cross-domain empirical transfer",
+    "operational candidate status"
+  ]
+}

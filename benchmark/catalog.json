@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "release": "beta-0.2",
+  "profiles": [
+    {
+      "profile_id": "football-1x2-multi-book-v1",
+      "title": "Football 1X2 multi-book residual repricing",
+      "kind": "empirical",
+      "status": "replicated_historical_prospective_pending",
+      "maximum_supported_tier": "replicated_historical",
+      "specification": "benchmark/SPEC.md",
+      "submission": "benchmark/reference_submission.json",
+      "result": "paper/manuscript.md",
+      "validator_status": "passed",
+      "economic_execution_validated": false,
+      "prospective_transfer_validated": false
+    },
+    {
+      "profile_id": "synthetic-multi-agent-pricing-v1",
+      "title": "Synthetic multi-agent pricing contract test",
+      "kind": "simulation_only",
+      "status": "executed",
+      "maximum_supported_tier": "executed",
+      "specification": "benchmark/SYNTHETIC_PROFILE.md",
+      "submission": "generated_by_workflow",
+      "result": "benchmark/SYNTHETIC_PROFILE_RESULT.md",
+      "validator_status": "passed",
+      "economic_execution_validated": false,
+      "prospective_transfer_validated": false
+    }
+  ],
+  "open_slots": [
+    "independent_real_prediction_market_profile",
+    "independent_real_insurance_quote_profile",
+    "independent_real_cross_venue_pricing_profile"
+  ],
+  "catalog_boundary": "Catalog inclusion records a reviewable benchmark artifact; it does not endorse profitability, causality or operational readiness."
+}

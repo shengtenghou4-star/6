@@ -19,16 +19,19 @@ The decisive next evidence is an untouched seven-day prospective campaign runnin
 
 ## Research outputs
 
-The repository now turns the same evidence base into several independently useful assets:
+The repository now contains a mature multi-output research package:
 
-- [empirical paper draft](paper/manuscript.md) — the historical mechanism, economic bottleneck and reserved prospective result block;
-- [machine-checkable claim registry](paper/claim_evidence_registry.json) — every load-bearing paper claim mapped to a repository result;
-- [Market Action Residual Benchmark](benchmark/SPEC.md) — a fixed-identity residual-ranking benchmark with a schema, validator and reference submission;
-- [external review packet](docs/EXTERNAL_REVIEW_PACKET.md) — a bounded audit path and falsification request;
-- [methods-note prospectus](docs/METHODS_NOTE_PROSPECTUS.md) — a reusable protocol for falsification-first historical market ML;
-- [asset multiplication map](docs/PROJECT_ASSET_MULTIPLICATION.md) — paper, benchmark, reproducibility, portfolio and domain-transfer paths.
+- [empirical paper](paper/manuscript.md) - complete historical manuscript with a reserved prospective result block;
+- [methods paper](paper/methods_note.md) - a full falsification-first protocol paper, not an outline;
+- [empirical claim registry](paper/claim_evidence_registry.json) and [methods claim registry](paper/methods_claim_registry.json) - machine-checkable provenance for load-bearing statements;
+- [Market Action Residual Benchmark](benchmark/README.md) - executable quickstart, formal specification, submission schema, validator, profile template and catalog;
+- [synthetic MARB profile](benchmark/SYNTHETIC_PROFILE_RESULT.md) - deterministic contract test recovering a known residual mechanism without manufacturing a profit claim;
+- [external review packet](docs/EXTERNAL_REVIEW_PACKET.md) and [adversarial review form](docs/ADVERSARIAL_REVIEW_FORM.md) - bounded audit and falsification paths;
+- [competition submission kit](docs/COMPETITION_SUBMISSION_KIT.md) - abstract, pitch, demo sequence, judge answers and integrity checklist;
+- [portfolio case study](docs/PORTFOLIO_CASE_STUDY.md) - role-specific resume bullets, interview story and architecture summary;
+- [release and publication checklist](docs/RELEASE_AND_PUBLICATION_CHECKLIST.md) - exact boundaries between working release, campaign-close release and formal submission.
 
-The paper and benchmark have independent CI audits. A compiled paper artifact is produced by the `Paper Build` workflow; compilation does not promote any evidence tier.
+The paper, benchmark and packaging layers have independent CI audits. The `Paper Build` workflow compiles both manuscripts; successful compilation does not promote any evidence tier.
 
 ## Evidence hierarchy
 
@@ -104,15 +107,17 @@ A scheduled outcome-blind [adapter coverage audit](docs/PROSPECTIVE_ADAPTER_COVE
 
 ## Reproducibility map
 
-The repository keeps protocol, implementation, workflow and result evidence separate:
+The repository keeps protocol, implementation, workflow, publication and result evidence separate:
 
-- `docs/EXPERIMENT_*_PROTOCOL.md` — frozen questions, constructions and gates;
-- `docs/EXPERIMENT_*_RESULT.md` — supported interpretation and failed checks;
-- `scripts/experiment_*.py` — executable historical diagnostics;
-- `src/marketlab/` — prospective ledgers, scoring, evaluation and audit logic;
-- `.github/workflows/` — pinned experiment and scheduled prospective runs;
-- `tests/` — chronology, identity, quota, tampering and failure-mode regression tests;
-- `prospective-data` branch — immutable campaign snapshots, manifests, forecasts and final evaluation evidence.
+- `docs/EXPERIMENT_*_PROTOCOL.md` - frozen questions, constructions and gates;
+- `docs/EXPERIMENT_*_RESULT.md` - supported interpretation and failed checks;
+- `scripts/experiment_*.py` - executable historical diagnostics;
+- `src/marketlab/` - prospective ledgers, scoring, evaluation and audit logic;
+- `paper/` - empirical and methods manuscripts plus claim registries;
+- `benchmark/` - MARB specification, profiles, schema, validator inputs and catalog;
+- `.github/workflows/` - pinned experiment, prospective, paper and asset audits;
+- `tests/` - chronology, identity, quota, tampering, claim and tier-boundary regression tests;
+- `prospective-data` branch - immutable campaign snapshots, manifests, forecasts and final evaluation evidence.
 
 Most historical experiments can be rerun through their named GitHub Actions workflow. Workflows verify frozen source or artifact hashes where the evidence boundary requires it and upload the full result bundle even when a run fails.
 
