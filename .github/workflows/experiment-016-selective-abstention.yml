@@ -1,0 +1,44 @@
+name: Experiment 016 Selective Abstention
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "scripts/experiment_016_selective_abstention.py"
+      - "docs/EXPERIMENT_016_PROTOCOL.md"
+      - ".github/workflows/experiment-016-selective-abstention.yml"
+
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install
+        run: python -m pip install -e ".[dev]"
+      - name: Run validation-only selective abstention study
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p artifacts/experiment-016
+          python scripts/experiment_016_selective_abstention.py \
+            --output-root artifacts/experiment-016 \
+            2>&1 | tee artifacts/experiment-016/run.log
+      - name: Upload result evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-016-selective-abstention-${{ github.run_id }}
+          path: |
+            artifacts/experiment-016/result.json
+            artifacts/experiment-016/failure.json
+            artifacts/experiment-016/progress.json
+            artifacts/experiment-016/run.log
+            artifacts/experiment-016/calibration-grid.csv
+            artifacts/experiment-016/frozen-test-policy.csv.gz
+          retention-days: 90
+          if-no-files-found: warn
