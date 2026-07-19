@@ -1,0 +1,60 @@
+name: Experiment 022 Dose Heterogeneity
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "scripts/experiment_022_dose_heterogeneity.py"
+      - "docs/EXPERIMENT_022_PROTOCOL.md"
+      - ".github/workflows/experiment-022-dose-heterogeneity.yml"
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install
+        run: python -m pip install -e .
+      - name: Download frozen Experiment 017 artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/experiment-017-source
+          gh api "/repos/${GITHUB_REPOSITORY}/actions/artifacts/8439484047/zip" > artifacts/experiment-017.zip
+          echo "15bc79ca3011a65f8347d2e0569b93268d76343a85cbd1f3c7e9ede245ad2554  artifacts/experiment-017.zip" | sha256sum -c -
+          unzip -q artifacts/experiment-017.zip -d artifacts/experiment-017-source
+      - name: Run residual dose-response heterogeneity audit
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p artifacts/experiment-022
+          python scripts/experiment_022_dose_heterogeneity.py \
+            --artifact-root artifacts/experiment-017-source \
+            --output-root artifacts/experiment-022 \
+            --replicates 4000 \
+            --seed 20260719 \
+            2>&1 | tee artifacts/experiment-022/run.log
+      - name: Upload result evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-022-dose-heterogeneity-${{ github.run_id }}
+          path: |
+            artifacts/experiment-022/result.json
+            artifacts/experiment-022/by-book.csv
+            artifacts/experiment-022/by-outcome.csv
+            artifacts/experiment-022/by-cutoff.csv
+            artifacts/experiment-022/run.log
+          retention-days: 90
+          if-no-files-found: warn
