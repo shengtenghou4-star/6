@@ -18,7 +18,7 @@ Raw and residual policies retained the same selected-outcome identity. The analy
 
 Home produced positive residual-minus-raw point return in all four mechanisms:
 
-- common random: `+65.84` incremental units, `+0.2456%` per full opportunity;
+- common random: `+65.84` incremental units, `+0.2456%` per home opportunity;
 - adverse-move rejection: `+46.03` units, `+0.1717%`;
 - highest-edge rejection: `+41.31` units, `+0.1541%`;
 - bookmaker-clustered outage: `+57.58` units, `+0.2148%`.
@@ -50,7 +50,7 @@ The non-home residual policy was independently unprofitable in every mechanism, 
 
 Home supplied all positive incremental contribution in common-random, adverse-move and highest-edge rejection. It supplied `90.18%` of positive contribution under bookmaker-clustered outage.
 
-The frozen classification is therefore:
+The recorded classification is therefore:
 
 - home incremental point return positive in 4/4 mechanisms;
 - draw positive in 0/4;
