@@ -13,7 +13,7 @@ The historical evidence supports a real **repricing-information mechanism**:
 - the relationship is positive across every tested cutoff, selected outcome and bookmaker, and survives removing any one bookmaker;
 - related effects transfer to independent timestamped data and unseen-book diagnostics.
 
-The project has **not** established stable realized profit, executable scalability, account capacity or live-betting readiness. Historical return point estimates are encouraging in some frozen tests, but profit confidence intervals, friction tests and heterogeneity checks still fail the project's validation gates.
+The project has **not** established stable realized profit, executable scalability, account capacity or live-betting readiness. Historical return point estimates are encouraging in some frozen tests, but profit confidence intervals, adversarial-fill tests and heterogeneity checks still fail the project's validation gates.
 
 The decisive next evidence is an untouched seven-day prospective campaign running from `2026-07-19T06:00:00Z` to `2026-07-26T06:30:00Z`.
 
@@ -27,7 +27,7 @@ The decisive next evidence is an untouched seven-day prospective campaign runnin
 | Effect is threshold-free | One-SD residual-uplift log-CLV slope `+0.004430`, 95% CI `[+0.003316,+0.005515]`; all four cutoffs positive | [Experiment 021](docs/EXPERIMENT_021_RESULT.md) |
 | Effect is broadly distributed | Positive slope for 8/8 bookmakers, 3/3 selected outcomes and 4/4 cutoffs; every leave-one-book-out lower bound above zero | [Experiment 022](docs/EXPERIMENT_022_RESULT.md) |
 | Historical matched-budget return | Residual policy `+0.565%` ROI versus raw reference `-0.747%`, but uncertainty crosses zero | [Experiment 017](docs/EXPERIMENT_017_RESULT.md) |
-| Execution robustness | Residual ranking direction better in 58/64 scenarios, but practical standalone ROI negative and robustness gate failed | [Experiment 018](docs/EXPERIMENT_018_RESULT.md) |
+| Execution robustness | Residual-minus-raw point return positive in 60/64 exact envelopes; ordinary fill loss leaves a thin positive margin, adversarial rejection erases it, and the validation gate fails | [Experiment 023](docs/EXPERIMENT_023_RESULT.md) |
 | Untouched prospective transfer | In progress | [Phase 36 campaign](docs/PROSPECTIVE_MATCHED_BUDGET_SHADOW.md) |
 | Stable profit and live execution | **Not established** | No authorization follows from this repository |
 
