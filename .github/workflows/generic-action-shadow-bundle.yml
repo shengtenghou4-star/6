@@ -7,6 +7,7 @@ on:
       - "src/marketlab/action_shadow.py"
       - "src/marketlab/action_shadow_schema.py"
       - "scripts/build_generic_action_shadow_bundle.py"
+      - "scripts/finalize_shadow_bundle_runtime.py"
       - "scripts/score_prospective_action_shadow.py"
       - "tests/test_action_shadow*.py"
       - "docs/ACTION_RESIDUAL_SHADOW_SCORER.md"
@@ -35,6 +36,11 @@ jobs:
           python scripts/build_generic_action_shadow_bundle.py \
             --output-root artifacts/generic-action-shadow-bundle \
             2>&1 | tee artifacts/generic-action-shadow-bundle/run.log
+      - name: Freeze runtime compatibility metadata
+        run: |
+          python scripts/finalize_shadow_bundle_runtime.py \
+            --bundle-root artifacts/generic-action-shadow-bundle/bundle \
+            --result artifacts/generic-action-shadow-bundle/result.json
       - name: Upload bundle evidence
         if: always()
         uses: actions/upload-artifact@v4
