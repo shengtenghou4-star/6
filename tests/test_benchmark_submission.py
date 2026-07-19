@@ -2,15 +2,18 @@ from __future__ import annotations
 
 import copy
 import json
+import sys
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 
 from scripts.validate_benchmark_submission import validate_submission
 
 
 def load_reference() -> dict:
-    root = Path(__file__).resolve().parents[1]
     return json.loads(
-        (root / "benchmark" / "reference_submission.json").read_text(encoding="utf-8")
+        (ROOT / "benchmark" / "reference_submission.json").read_text(encoding="utf-8")
     )
 
 
