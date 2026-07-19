@@ -1,0 +1,101 @@
+{
+  "concentration": {
+    "bookmaker": {
+      "categories": 8,
+      "largest_category": "boylesports",
+      "largest_share": 0.3076923076923077,
+      "top5_share": 0.7692307692307693
+    },
+    "snapshot": {
+      "categories": 4,
+      "largest_category": "20260719T110021_154292Z__soccer_sweden_allsvenskan__e4c7d9b6f017",
+      "largest_share": 0.38461538461538464,
+      "top5_share": 1.0
+    },
+    "sport": null
+  },
+  "current_effective_sample": {
+    "candidate_rows": 13,
+    "event_efficiency": 1.0,
+    "event_kish_effective_size": 13.0,
+    "snapshot_kish_effective_size": 3.595744680851064,
+    "unique_events": 13
+  },
+  "evidence_boundary": {
+    "closing_targets_read": false,
+    "match_results_read": false,
+    "policy_scores_used_as_performance_labels": false,
+    "running_policy_changed": false
+  },
+  "forecast": {
+    "final_candidates": {
+      "mean": 727.4622,
+      "median": 709.0,
+      "q025": 396.0,
+      "q975": 1159.0249999999978
+    },
+    "final_total_exact_5pct_quota": {
+      "mean": 38.6214,
+      "median": 38.0,
+      "q025": 21.0,
+      "q975": 61.0
+    },
+    "final_unique_events": {
+      "mean": 728.23175,
+      "median": 710.0,
+      "q025": 395.0,
+      "q975": 1154.0
+    },
+    "minimum_detectable_incremental_log_clv_per_opportunity": {
+      "mean": 0.0016300869138634255,
+      "median": 0.001605331589900882,
+      "q025": 0.0012591892919538892,
+      "q975": 0.00215226319187761
+    }
+  },
+  "forecast_reliability": "insufficient_calibration",
+  "forecast_type": "outcome_blind_interim_operational_forecast",
+  "frozen_window": {
+    "campaign_end_utc": "2026-07-26T06:30:00+00:00",
+    "campaign_start_utc": "2026-07-19T06:00:00+00:00",
+    "collection_cadence_hours": 3.0,
+    "latest_eligible_observation_utc": "2026-07-26T03:15:00+00:00",
+    "observed_cycle_fraction": 0.018518518518518517,
+    "planned_collection_cycles_from_first_observed_cycle": 54,
+    "policy_activation_utc": "2026-07-19T11:00:00+00:00"
+  },
+  "gate_probabilities": {
+    "all_phase43_volume_gates": 0.9035,
+    "at_least_15_selections_per_policy": 0.99855,
+    "at_least_300_candidates": 0.9976,
+    "at_least_75_unique_events": 1.0,
+    "at_least_three_cutoffs_with_40_candidates": 0.997,
+    "raw_positive_capacity_all_cutoffs": 0.953,
+    "residual_positive_capacity_all_cutoffs": 0.9513
+  },
+  "generated_at_utc": "2026-07-19T13:59:53.158450+00:00",
+  "input": {
+    "first_cycle_utc": "2026-07-19T11:00:21.154292+00:00",
+    "latest_cycle_utc": "2026-07-19T11:00:21.154292+00:00",
+    "observed_collection_cycles": 1,
+    "path": "prospective-data/data/derived/latest/shadow/event-shadow-candidates.csv.gz",
+    "post_activation_rows": 13,
+    "post_activation_snapshots": 4,
+    "post_activation_unique_events": 13,
+    "sha256": "1bc00c4f9264ab797b603d2ece4dd3b87346246e16e8381ecb1d884d4a08fac7"
+  },
+  "planning_assumption": {
+    "cycle_inference": "new cycle after more than 1.0 hour between snapshot ingestion times",
+    "forecast_model": "Jeffreys-prior gamma-Poisson per inferred collection cycle with beta-binomial positive-score capacity",
+    "historical_cluster_sigma_equivalent": 0.015268280246644523,
+    "power": 0.8,
+    "two_sided_alpha": 0.05,
+    "z_alpha_plus_power": 2.801585
+  },
+  "probabilities_decision_grade": false,
+  "status": "completed",
+  "warnings": [
+    "T12_volume_structurally_weak",
+    "forecast_calibration_insufficient_fewer_than_3_cycles"
+  ]
+}
