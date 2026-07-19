@@ -1,50 +1,61 @@
 # Paper package
 
-This directory turns the repository's strongest completed evidence into a living manuscript while keeping claim provenance machine-checkable.
+This directory contains two living manuscripts with machine-checkable evidence provenance.
 
-## Main paper
+## Empirical paper
 
-`manuscript.md` is the empirical paper draft:
+`manuscript.md`:
 
 > **Abnormal Bookmaker Actions Predict Subsequent Repricing: Residual information in multi-book football odds**
 
-The paper is deliberately framed around the replicated repricing-information mechanism. It does not present the project as a validated betting system.
+The empirical paper centers the replicated historical repricing-information mechanism. Version 0.1 contains the literature position, chronology boundary, residual-action method, placebo, dose-response, heterogeneity, matched-return, execution and outcome-attribution results, plus a reserved prospective result block.
 
-Version 0.1 already contains:
+When the campaign closes, the historical sections should remain stable. Only the reserved prospective block, final abstract wording, prospective tables and transfer discussion should change.
 
-- abstract, literature position and contribution statement;
-- data and chronology boundary;
-- residual-action method;
-- placebo, dose-response and heterogeneity results;
-- matched-return, execution and outcome-attribution diagnostics;
-- a reserved prospective-results block;
-- limitations and defensible conclusion;
-- bibliography with DOI-level references.
+Its claims are governed by `claim_evidence_registry.json` and `scripts/validate_paper_claims.py`.
 
-When the prospective campaign closes, the historical text should remain stable. The update should be limited to the reserved result block, final abstract wording, prospective tables and discussion of transfer.
+## Methods paper
 
-## Claim provenance
+`methods_note.md`:
 
-`claim_evidence_registry.json` maps every load-bearing empirical claim to a repository result file and literal evidence tokens. `scripts/validate_paper_claims.py` fails if a source disappears, a required value changes or a claim marker is removed from the manuscript.
+> **From Backtest to Evidence: A falsification-first protocol for machine learning in historical markets**
 
-Run locally:
+Version 0.9 is a complete methods manuscript, not an outline. It extracts the reusable research architecture:
+
+- chronology and data contracts;
+- fixed candidate identity;
+- structure-preserving alignment placebos;
+- threshold-free evidence before strategy selection;
+- separation of mechanism, economics and execution;
+- outcome-blind deployment support audits;
+- parallel repair rather than retrospective stream rewriting;
+- immutable future ledgers and evidence tiers;
+- machine-checkable claim governance.
+
+The football project is the worked example. The deterministic synthetic MARB profile is a contract test, not a claimed real-domain replication. The strongest missing extension is an independently sourced empirical second domain.
+
+Methods-paper claims are governed by `methods_claim_registry.json` and `scripts/validate_methods_note.py`.
+
+## Local checks
 
 ```bash
 python scripts/validate_paper_claims.py
-pytest -q tests/test_paper_claim_registry.py
+python scripts/validate_methods_note.py
+pytest -q tests/test_paper_claim_registry.py tests/test_methods_note.py
 ```
 
-The `Paper Evidence Audit` workflow performs the same check on pull requests and main-branch changes.
+The `Paper Evidence Audit`, `Research Assets Audit` and `Paper Build` workflows check provenance, tests and PDF compilation.
 
-## Evidence labels
+## PDF artifacts
 
-The paper uses the repository's evidence ladder:
+The paper workflow builds:
 
-- replicated historical mechanism;
-- historical diagnostic;
-- post-hoc historical diagnostic;
-- executed outcome-blind audit;
-- validated prospective evidence only after frozen gates pass.
+- `abnormal-bookmaker-actions.pdf`;
+- `from-backtest-to-evidence.pdf`.
+
+Both are research drafts. Successful compilation does not promote an evidence tier.
+
+## Evidence boundaries
 
 The following claims remain prohibited until new evidence exists:
 
@@ -52,14 +63,15 @@ The following claims remain prohibited until new evidence exists:
 - live execution readiness;
 - scalable account capacity;
 - validated prospective transfer;
-- validated home-only strategy.
+- validated home-only strategy;
+- validated empirical cross-domain transfer.
 
 ## Publication path
 
-The draft is designed for three outputs from one evidence base:
+The current evidence base supports three distinct outputs:
 
-1. **Empirical paper** — abnormal bookmaker actions and future repricing.
-2. **Methods note** — falsification-first, leakage-safe evaluation of market ML systems.
-3. **Open benchmark** — fixed-identity residual ranking tasks and audit contracts.
+1. **Empirical paper** - the historical bookmaker repricing mechanism and prospective test.
+2. **Methods paper** - a falsification-first protocol for historical market ML.
+3. **MARB benchmark** - fixed-identity residual ranking, evidence tiers and submission contracts.
 
-The empirical paper should be the first submission because it has the strongest completed quantitative result. The methods note and benchmark can cite the same repository without recycling the empirical contribution as a second result claim.
+The empirical paper carries the primary quantitative discovery. The methods paper contributes the evidence architecture. The benchmark supplies an executable extension path. They should cross-reference each other without presenting the same empirical finding as three independent discoveries.
