@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+import json
+import sys
+from pathlib import Path
 from typing import Any, Mapping
 
+import joblib
 import numpy as np
 import pandas as pd
+import sklearn
 
 from .action_shadow_schema import (
     ACTION_RESIDUAL_FEATURES,
@@ -15,10 +20,31 @@ from .action_shadow_schema import (
     LoadedShadowBundle,
     _require_columns,
     build_shadow_feature_records,
-    load_shadow_bundle,
+    load_shadow_bundle as _load_shadow_bundle,
     normalize_probabilities,
     sha256,
 )
+
+
+def load_shadow_bundle(directory: Path) -> LoadedShadowBundle:
+    manifest_path = directory / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    runtime = manifest.get("runtime")
+    if not isinstance(runtime, dict):
+        raise ValueError("bundle runtime metadata missing")
+    actual = {
+        "python_major_minor": f"{sys.version_info.major}.{sys.version_info.minor}",
+        "scikit_learn": sklearn.__version__,
+        "joblib": joblib.__version__,
+    }
+    mismatches = {
+        key: {"bundle": runtime.get(key), "runtime": value}
+        for key, value in actual.items()
+        if runtime.get(key) != value
+    }
+    if mismatches:
+        raise ValueError(f"bundle runtime mismatch: {mismatches}")
+    return _load_shadow_bundle(directory)
 
 
 def _predict_raw_delta(models: Mapping[str, Any], prefix: str, x: np.ndarray) -> np.ndarray:
