@@ -1,0 +1,93 @@
+name: Research Assets Audit
+
+on:
+  pull_request:
+    paths:
+      - "paper/methods_note.md"
+      - "paper/methods_claim_registry.json"
+      - "benchmark/**"
+      - "docs/COMPETITION_SUBMISSION_KIT.md"
+      - "docs/PORTFOLIO_CASE_STUDY.md"
+      - "docs/ADVERSARIAL_REVIEW_FORM.md"
+      - "docs/RELEASE_AND_PUBLICATION_CHECKLIST.md"
+      - "CITATION.cff"
+      - "scripts/validate_methods_note.py"
+      - "scripts/validate_benchmark_catalog.py"
+      - "tests/test_methods_note.py"
+      - "tests/test_benchmark_catalog.py"
+      - ".github/workflows/research-assets-audit.yml"
+  push:
+    branches: [main]
+    paths:
+      - "paper/methods_note.md"
+      - "paper/methods_claim_registry.json"
+      - "benchmark/**"
+      - "docs/COMPETITION_SUBMISSION_KIT.md"
+      - "docs/PORTFOLIO_CASE_STUDY.md"
+      - "docs/ADVERSARIAL_REVIEW_FORM.md"
+      - "docs/RELEASE_AND_PUBLICATION_CHECKLIST.md"
+      - "CITATION.cff"
+      - "scripts/validate_methods_note.py"
+      - "scripts/validate_benchmark_catalog.py"
+      - "tests/test_methods_note.py"
+      - "tests/test_benchmark_catalog.py"
+      - ".github/workflows/research-assets-audit.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install
+        run: python -m pip install -e ".[dev]"
+      - name: Validate assets
+        run: |
+          mkdir -p artifacts/research-assets-audit
+          python scripts/validate_methods_note.py --output artifacts/research-assets-audit/methods-note.json
+          python scripts/validate_benchmark_catalog.py --output artifacts/research-assets-audit/catalog.json
+          python scripts/validate_benchmark_submission.py benchmark/reference_submission.json --output artifacts/research-assets-audit/reference.json
+      - name: Focused tests
+        run: |
+          pytest -q \
+            tests/test_methods_note.py \
+            tests/test_benchmark_catalog.py \
+            tests/test_benchmark_submission.py \
+            tests/test_synthetic_marb_profile.py \
+            --junitxml=artifacts/research-assets-audit/pytest.xml
+      - name: Check package inventory
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          required = [
+              "paper/manuscript.md", "paper/methods_note.md",
+              "paper/claim_evidence_registry.json", "paper/methods_claim_registry.json",
+              "benchmark/README.md", "benchmark/SPEC.md", "benchmark/SUBMISSION_GUIDE.md",
+              "benchmark/PROFILE_TEMPLATE.md", "benchmark/catalog.json",
+              "docs/COMPETITION_SUBMISSION_KIT.md", "docs/PORTFOLIO_CASE_STUDY.md",
+              "docs/ADVERSARIAL_REVIEW_FORM.md", "docs/RELEASE_AND_PUBLICATION_CHECKLIST.md",
+              "CITATION.cff",
+          ]
+          missing = [item for item in required if not Path(item).is_file()]
+          report = {"status": "passed" if not missing else "failed", "missing": missing}
+          Path("artifacts/research-assets-audit/inventory.json").write_text(json.dumps(report, indent=2) + "\n")
+          if missing:
+              raise SystemExit(missing)
+          PY
+      - name: Upload audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: research-assets-audit-${{ github.run_id }}
+          path: artifacts/research-assets-audit/
+          retention-days: 90
+          if-no-files-found: error
