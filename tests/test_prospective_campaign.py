@@ -112,3 +112,8 @@ def test_policy_rejects_scope_and_budget_drift() -> None:
             maximum_paid_sports_per_run=4,
             maximum_paid_credits_per_run=3,
         )
+
+
+def test_utc_iso_uses_seconds_without_fractional_precision() -> None:
+    value = datetime(2026, 7, 19, 7, 11, 59, 17230, tzinfo=UTC)
+    assert utc_iso(value) == "2026-07-19T07:11:59Z"
