@@ -16,9 +16,115 @@ from marketlab.prospective_odds import (
     utc_now_iso,
 )
 
-
 API_HOST = "https://api.the-odds-api.com"
 API_KEY_ENV = "THE_ODDS_API_KEY"
+
+
+def redact(value: str, api_key: str) -> str:
+    return value.replace(api_key, "[REDACTED]")
+
+
+def write_failure(
+    output_root: Path,
+    *,
+    ingested_at_utc: str,
+    endpoint: str,
+    public_parameters: dict[str, str],
+    exc: Exception,
+    api_key: str,
+    request_sent: bool,
+) -> None:
+    output_root.mkdir(parents=True, exist_ok=True)
+    failure = {
+        "provider": "the_odds_api_v4",
+        "ingested_at_utc": ingested_at_utc,
+        "endpoint": endpoint,
+        "request_parameters_without_api_key": public_parameters,
+        "error_type": type(exc).__name__,
+        "error": redact(str(exc), api_key),
+        "request_sent": request_sent,
+    }
+    failure_path = output_root / "last-request-failure.json"
+    failure_path.write_text(
+        json.dumps(failure, ensure_ascii=False, indent=2, sort_keys=True),
+        encoding="utf-8",
+    )
+    print(str(failure_path), file=sys.stderr)
+
+
+def verify_active_sport(
+    *,
+    api_key: str,
+    sport: str,
+    output_root: Path,
+    timeout_seconds: float,
+) -> None:
+    endpoint = f"{API_HOST}/v4/sports"
+    ingested_at_utc = utc_now_iso()
+    try:
+        response = requests.get(
+            endpoint,
+            params={"apiKey": api_key},
+            timeout=timeout_seconds,
+        )
+        response.raise_for_status()
+        payload = response.json()
+        if not isinstance(payload, list):
+            raise ValueError("active-sports endpoint did not return a list")
+    except (requests.RequestException, ValueError) as exc:
+        write_failure(
+            output_root,
+            ingested_at_utc=ingested_at_utc,
+            endpoint="/v4/sports",
+            public_parameters={},
+            exc=exc,
+            api_key=api_key,
+            request_sent=True,
+        )
+        raise SystemExit(1) from exc
+
+    selected = next(
+        (
+            item
+            for item in payload
+            if isinstance(item, dict) and str(item.get("key", "")) == sport
+        ),
+        None,
+    )
+    evidence = {
+        "provider": "the_odds_api_v4",
+        "ingested_at_utc": ingested_at_utc,
+        "endpoint": "/v4/sports",
+        "selected_sport": sport,
+        "selected_sport_found": selected is not None,
+        "selected_sport_active": bool(selected and selected.get("active", True)),
+        "active_sport_count": len(payload),
+        "quota_headers": {
+            key.lower(): value
+            for key, value in response.headers.items()
+            if key.lower().startswith("x-requests-")
+        },
+        "sports": [
+            {
+                "key": item.get("key"),
+                "group": item.get("group"),
+                "title": item.get("title"),
+                "active": item.get("active"),
+                "has_outrights": item.get("has_outrights"),
+            }
+            for item in payload
+            if isinstance(item, dict)
+        ],
+    }
+    output_root.mkdir(parents=True, exist_ok=True)
+    (output_root / "active-sports-preflight.json").write_text(
+        json.dumps(evidence, ensure_ascii=False, indent=2, sort_keys=True),
+        encoding="utf-8",
+    )
+    if selected is None or selected.get("active", True) is False:
+        raise SystemExit(
+            f"sport {sport!r} is not active; no odds request was sent and no odds credits were used"
+        )
 
 
 def main() -> None:
@@ -50,11 +156,31 @@ def main() -> None:
         commence_time_from=args.commence_time_from,
         commence_time_to=args.commence_time_to,
     )
+    if request.markets != ("h2h",):
+        raise SystemExit(
+            "first authenticated pilot is frozen to h2h only; no request was sent and no credits were used"
+        )
+    if request.regions and len(request.regions) != 1:
+        raise SystemExit(
+            "first authenticated pilot allows exactly one region; no request was sent and no credits were used"
+        )
+    if request.bookmakers and not 1 <= len(request.bookmakers) <= 10:
+        raise SystemExit(
+            "first authenticated pilot allows 1-10 named bookmakers; no request was sent and no credits were used"
+        )
+
+    output_root = Path(args.output_root)
+    verify_active_sport(
+        api_key=api_key,
+        sport=request.sport,
+        output_root=output_root,
+        timeout_seconds=args.timeout_seconds,
+    )
+
     endpoint = f"{API_HOST}/v4/sports/{request.sport}/odds"
     public_parameters = request.public_parameters()
     public_url = f"{endpoint}?{urlencode(public_parameters)}"
     ingested_at_utc = utc_now_iso()
-
     try:
         response = requests.get(
             endpoint,
@@ -63,27 +189,19 @@ def main() -> None:
         )
         response.raise_for_status()
     except requests.RequestException as exc:
-        output_root = Path(args.output_root)
-        output_root.mkdir(parents=True, exist_ok=True)
-        failure = {
-            "provider": "the_odds_api_v4",
-            "ingested_at_utc": ingested_at_utc,
-            "endpoint": f"/v4/sports/{request.sport}/odds",
-            "request_parameters_without_api_key": public_parameters,
-            "error_type": type(exc).__name__,
-            "error": str(exc).replace(api_key, "[REDACTED]"),
-            "request_sent": True,
-        }
-        failure_path = output_root / "last-request-failure.json"
-        failure_path.write_text(
-            json.dumps(failure, ensure_ascii=False, indent=2, sort_keys=True),
-            encoding="utf-8",
+        write_failure(
+            output_root,
+            ingested_at_utc=ingested_at_utc,
+            endpoint=f"/v4/sports/{request.sport}/odds",
+            public_parameters=public_parameters,
+            exc=exc,
+            api_key=api_key,
+            request_sent=True,
         )
-        print(str(failure_path), file=sys.stderr)
         raise SystemExit(1) from exc
 
     directory = archive_current_odds_snapshot(
-        output_root=Path(args.output_root),
+        output_root=output_root,
         request=request,
         raw_response_bytes=response.content,
         response_headers=response.headers,
