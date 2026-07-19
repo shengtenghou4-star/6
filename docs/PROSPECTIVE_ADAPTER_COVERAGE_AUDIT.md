@@ -1,0 +1,1 @@
+# Prospective adapter coverage audit
