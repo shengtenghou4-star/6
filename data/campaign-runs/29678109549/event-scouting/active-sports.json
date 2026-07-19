@@ -1,0 +1,451 @@
+{
+  "active_sports": [
+    {
+      "active": true,
+      "description": "Canadian Football League",
+      "group": "American Football",
+      "has_outrights": false,
+      "key": "americanfootball_cfl",
+      "title": "CFL"
+    },
+    {
+      "active": true,
+      "description": "US College Football",
+      "group": "American Football",
+      "has_outrights": false,
+      "key": "americanfootball_ncaaf",
+      "title": "NCAAF"
+    },
+    {
+      "active": true,
+      "description": "US Football",
+      "group": "American Football",
+      "has_outrights": false,
+      "key": "americanfootball_nfl",
+      "title": "NFL"
+    },
+    {
+      "active": true,
+      "description": "US Football",
+      "group": "American Football",
+      "has_outrights": false,
+      "key": "americanfootball_nfl_preseason",
+      "title": "NFL Preseason"
+    },
+    {
+      "active": true,
+      "description": "Aussie Football",
+      "group": "Aussie Rules",
+      "has_outrights": false,
+      "key": "aussierules_afl",
+      "title": "AFL"
+    },
+    {
+      "active": true,
+      "description": "KBO League",
+      "group": "Baseball",
+      "has_outrights": false,
+      "key": "baseball_kbo",
+      "title": "KBO"
+    },
+    {
+      "active": true,
+      "description": "Major League Baseball",
+      "group": "Baseball",
+      "has_outrights": false,
+      "key": "baseball_mlb",
+      "title": "MLB"
+    },
+    {
+      "active": true,
+      "description": "Nippon Professional Baseball",
+      "group": "Baseball",
+      "has_outrights": false,
+      "key": "baseball_npb",
+      "title": "NPB"
+    },
+    {
+      "active": true,
+      "description": "US Basketball",
+      "group": "Basketball",
+      "has_outrights": false,
+      "key": "basketball_nba_summer_league",
+      "title": "NBA Summer League"
+    },
+    {
+      "active": true,
+      "description": "US Basketball",
+      "group": "Basketball",
+      "has_outrights": false,
+      "key": "basketball_wnba",
+      "title": "WNBA"
+    },
+    {
+      "active": true,
+      "description": "Boxing Bouts",
+      "group": "Boxing",
+      "has_outrights": false,
+      "key": "boxing_boxing",
+      "title": "Boxing"
+    },
+    {
+      "active": true,
+      "description": "International Twenty20",
+      "group": "Cricket",
+      "has_outrights": false,
+      "key": "cricket_international_t20",
+      "title": "International Twenty20"
+    },
+    {
+      "active": true,
+      "description": "One Day Internationals",
+      "group": "Cricket",
+      "has_outrights": false,
+      "key": "cricket_odi",
+      "title": "One Day Internationals"
+    },
+    {
+      "active": true,
+      "description": "The Hundred",
+      "group": "Cricket",
+      "has_outrights": false,
+      "key": "cricket_the_hundred",
+      "title": "The Hundred"
+    },
+    {
+      "active": true,
+      "description": "US Ice Hockey",
+      "group": "Ice Hockey",
+      "has_outrights": false,
+      "key": "icehockey_nhl",
+      "title": "NHL"
+    },
+    {
+      "active": true,
+      "description": "Premier Lacrosse League",
+      "group": "Lacrosse",
+      "has_outrights": false,
+      "key": "lacrosse_pll",
+      "title": "PLL"
+    },
+    {
+      "active": true,
+      "description": "Mixed Martial Arts",
+      "group": "Mixed Martial Arts",
+      "has_outrights": false,
+      "key": "mma_mixed_martial_arts",
+      "title": "MMA"
+    },
+    {
+      "active": true,
+      "description": "Aussie Rugby League",
+      "group": "Rugby League",
+      "has_outrights": false,
+      "key": "rugbyleague_nrl",
+      "title": "NRL"
+    },
+    {
+      "active": true,
+      "description": "Argentine Primera División",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_argentina_primera_division",
+      "title": "Primera División - Argentina"
+    },
+    {
+      "active": true,
+      "description": "Austrian Soccer",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_austria_bundesliga",
+      "title": "Austrian Football Bundesliga"
+    },
+    {
+      "active": true,
+      "description": "Belgian First Division A",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_belgium_first_div",
+      "title": "Belgium First Div"
+    },
+    {
+      "active": true,
+      "description": "Brasileirão Série A",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_brazil_campeonato",
+      "title": "Brazil Série A"
+    },
+    {
+      "active": true,
+      "description": "Campeonato Brasileiro Série B",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_brazil_serie_b",
+      "title": "Brazil Série B"
+    },
+    {
+      "active": true,
+      "description": "Campeonato Chileno",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_chile_campeonato",
+      "title": "Primera División - Chile"
+    },
+    {
+      "active": true,
+      "description": "Chinese Soccer",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_china_superleague",
+      "title": "Super League - China"
+    },
+    {
+      "active": true,
+      "description": "CONMEBOL Copa Libertadores",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_conmebol_copa_libertadores",
+      "title": "Copa Libertadores"
+    },
+    {
+      "active": true,
+      "description": "CONMEBOL Copa Sudamericana",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_conmebol_copa_sudamericana",
+      "title": "Copa Sudamericana"
+    },
+    {
+      "active": true,
+      "description": "Danish Soccer",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_denmark_superliga",
+      "title": "Denmark Superliga"
+    },
+    {
+      "active": true,
+      "description": "EFL Championship",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_efl_champ",
+      "title": "Championship"
+    },
+    {
+      "active": true,
+      "description": "League Cup",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_england_efl_cup",
+      "title": "EFL Cup"
+    },
+    {
+      "active": true,
+      "description": "EFL League 1",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_england_league1",
+      "title": "League 1"
+    },
+    {
+      "active": true,
+      "description": "EFL League 2 ",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_england_league2",
+      "title": "League 2"
+    },
+    {
+      "active": true,
+      "description": "English Premier League",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_epl",
+      "title": "EPL"
+    },
+    {
+      "active": true,
+      "description": "FIFA World Cup 2026",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_fifa_world_cup",
+      "title": "FIFA World Cup"
+    },
+    {
+      "active": true,
+      "description": "Finnish  Soccer",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_finland_veikkausliiga",
+      "title": "Veikkausliiga - Finland"
+    },
+    {
+      "active": true,
+      "description": "French Soccer",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_france_ligue_one",
+      "title": "Ligue 1 - France"
+    },
+    {
+      "active": true,
+      "description": "German Soccer",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_germany_bundesliga",
+      "title": "Bundesliga - Germany"
+    },
+    {
+      "active": true,
+      "description": "German Soccer",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_germany_bundesliga2",
+      "title": "Bundesliga 2 - Germany"
+    },
+    {
+      "active": true,
+      "description": "German Soccer",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_germany_dfb_pokal",
+      "title": "DFB-Pokal"
+    },
+    {
+      "active": true,
+      "description": "German Soccer",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_germany_liga3",
+      "title": "3. Liga - Germany"
+    },
+    {
+      "active": true,
+      "description": "Italian Soccer",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_italy_serie_a",
+      "title": "Serie A - Italy"
+    },
+    {
+      "active": true,
+      "description": "Korean Soccer",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_korea_kleague1",
+      "title": "K League 1"
+    },
+    {
+      "active": true,
+      "description": "Airtricity League Premier Division",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_league_of_ireland",
+      "title": "League of Ireland"
+    },
+    {
+      "active": true,
+      "description": "Mexican Soccer",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_mexico_ligamx",
+      "title": "Liga MX"
+    },
+    {
+      "active": true,
+      "description": "Dutch Soccer",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_netherlands_eredivisie",
+      "title": "Dutch Eredivisie"
+    },
+    {
+      "active": true,
+      "description": "Norwegian Soccer",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_norway_eliteserien",
+      "title": "Eliteserien - Norway"
+    },
+    {
+      "active": true,
+      "description": "Polish Soccer",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_poland_ekstraklasa",
+      "title": "Ekstraklasa - Poland"
+    },
+    {
+      "active": true,
+      "description": "Russian Soccer",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_russia_premier_league",
+      "title": "Premier League - Russia"
+    },
+    {
+      "active": true,
+      "description": "Spanish Soccer",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_spain_la_liga",
+      "title": "La Liga - Spain"
+    },
+    {
+      "active": true,
+      "description": "Scottish Premiership",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_spl",
+      "title": "Premiership - Scotland"
+    },
+    {
+      "active": true,
+      "description": "Swedish Soccer",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_sweden_allsvenskan",
+      "title": "Allsvenskan - Sweden"
+    },
+    {
+      "active": true,
+      "description": "Swedish Soccer",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_sweden_superettan",
+      "title": "Superettan - Sweden"
+    },
+    {
+      "active": true,
+      "description": "Swiss Soccer",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_switzerland_superleague",
+      "title": "Swiss Superleague"
+    },
+    {
+      "active": true,
+      "description": "European Champions League Qualification",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_uefa_champs_league_qualification",
+      "title": "UEFA Champions League Qualification"
+    },
+    {
+      "active": true,
+      "description": "Major League Soccer",
+      "group": "Soccer",
+      "has_outrights": false,
+      "key": "soccer_usa_mls",
+      "title": "MLS"
+    }
+  ],
+  "endpoint": "/v4/sports",
+  "observed_at_utc": "2026-07-19T07:26:53.180827Z",
+  "quota": {
+    "x-requests-last": "0",
+    "x-requests-remaining": "494",
+    "x-requests-used": "6"
+  }
+}
