@@ -1,0 +1,43 @@
+name: Unpack Phase 43 Source Bundle
+
+on:
+  push:
+    branches:
+      - phase-43-prospective-cohort-evaluation
+    paths:
+      - phase43_bundle.tar.gz
+      - .github/workflows/unpack-phase43.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: unpack-phase-43-source-bundle
+  cancel-in-progress: false
+
+jobs:
+  unpack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Verify and unpack frozen source bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "13acd41d692aa5252c0ffdeb812fc67cdcff98d514192f65ee80613909a6c455  phase43_bundle.tar.gz" | sha256sum -c -
+          tar -xzf phase43_bundle.tar.gz
+          rm phase43_bundle.tar.gz
+          rm .github/workflows/unpack-phase43.yml
+
+      - name: Commit materialized Phase 43 files
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Materialize Phase 43 cohort evaluator"
+          git push origin HEAD:phase-43-prospective-cohort-evaluation
