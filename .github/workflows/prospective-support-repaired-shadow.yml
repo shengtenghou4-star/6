@@ -1,6 +1,13 @@
 name: Prospective Support Repaired Shadow
 
 on:
+  workflow_run:
+    workflows:
+      - "Prospective Sequence Campaign"
+    types:
+      - completed
+    branches:
+      - main
   schedule:
     - cron: "7 */3 * * *"
   workflow_dispatch:
@@ -31,6 +38,7 @@ env:
 
 jobs:
   repair:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -107,7 +115,7 @@ jobs:
             --adapter-id "$REPAIR_ADAPTER_ID" \
             2>&1 | tee artifacts/support-repaired-shadow/run.log
 
-      - name: Persist immutable scheduled repair evidence
+      - name: Persist immutable repair evidence
         if: steps.window.outputs.active == 'true' && github.event_name != 'pull_request'
         shell: bash
         run: |
@@ -127,8 +135,17 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/support-repair-runs data/derived/latest/support-repaired-shadow
           git commit -m "Record support-repaired shadow ${GITHUB_RUN_ID}"
-          git pull --rebase origin prospective-data
-          git push origin HEAD:prospective-data
+          for attempt in 1 2 3; do
+            git pull --rebase origin prospective-data
+            if git push origin HEAD:prospective-data; then
+              exit 0
+            fi
+            if [[ "$attempt" == "3" ]]; then
+              echo "Unable to persist support-repaired evidence after three attempts" >&2
+              exit 1
+            fi
+            sleep $((attempt * 5))
+          done
 
       - name: Upload repair evidence
         if: always() && steps.window.outputs.active == 'true'
@@ -141,3 +158,4 @@ jobs:
 
 # This workflow performs no paid API request. It processes only already-persisted
 # outcome-blind prospective scores and leaves the original v2 shadow unchanged.
+# A successful campaign run triggers immediate refresh; the cron remains fallback.
