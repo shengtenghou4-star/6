@@ -1,0 +1,49 @@
+{
+  "adapter_id": "support_constrained_coverage_normalized_v1",
+  "diagnostics": {
+    "closing_targets_used": false,
+    "input_rows": 895,
+    "match_outcomes_used": false,
+    "policy": {
+      "activation_utc": "2026-07-19T12:00:00Z",
+      "adapter_id": "support_constrained_coverage_normalized_v1",
+      "cutoff_tolerance_hours": 1.75,
+      "maximum_historical_hours": 48.0,
+      "minimum_historical_hours": 6.0
+    },
+    "post_activation_rows": 0,
+    "pre_activation_rows_excluded": 895,
+    "status": "no_post_activation_rows",
+    "timing_excluded_rows": 0,
+    "timing_supported_rows": 0
+  },
+  "outputs": {
+    "event_candidates": {
+      "rows": 0
+    },
+    "per_book_scores": {
+      "rows": 0
+    }
+  },
+  "policy": {
+    "closing_targets_used": false,
+    "match_outcomes_used": false,
+    "no_execution": true,
+    "original_v2_shadow_replaced": false,
+    "parallel_unvalidated_transfer": true,
+    "research_only": true
+  },
+  "schema_version": 1,
+  "source": {
+    "bundle": {
+      "bundle_id": "generic-action-shadow-v1-8bb898c3c067",
+      "manifest_sha256": "1bc04196e86b9802eedba50411f834e5155de814dffccc16289f6c65d12da757"
+    },
+    "per_book_scores": {
+      "path": "prospective-data/data/derived/latest/shadow/per-book-shadow-scores.csv.gz",
+      "rows": 895,
+      "sha256": "bac819fda33ea1a735163cd80557c86ec7a6bd830777ea2e9f0ef77d7d6ee6f1"
+    }
+  },
+  "status": "no_post_activation_rows"
+}
