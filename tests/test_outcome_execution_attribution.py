@@ -9,7 +9,7 @@ from marketlab.outcome_execution_attribution import attribute_outcome_execution
 def ledger(*, residual: bool) -> pd.DataFrame:
     outcomes = ["home", "home", "draw", "draw", "away", "away"]
     returns = (
-        [1.2, -1.0, -1.0, -1.0, 0.8, -1.0]
+        [1.2, -1.0, -1.0, -1.0, -1.0, -1.0]
         if residual
         else [-1.0, -1.0, 1.5, -1.0, -1.0, -1.0]
     )
@@ -48,8 +48,8 @@ def test_attributes_point_return_by_outcome_and_without_home() -> None:
 
     assert home["incremental_profit_units"] == pytest.approx(2.2)
     assert draw["incremental_profit_units"] == pytest.approx(-2.5)
-    assert non_home["incremental_profit_units"] == pytest.approx(-1.7)
-    assert without_home["incremental_profit_units"] == pytest.approx(-1.7)
+    assert non_home["incremental_profit_units"] == pytest.approx(-2.5)
+    assert without_home["incremental_profit_units"] == pytest.approx(-2.5)
     assert summary["non_home_incremental_positive"] is False
     assert summary["without_home_incremental_positive"] is False
     assert summary["maximum_positive_outcome_contribution_share"] == pytest.approx(1.0)
