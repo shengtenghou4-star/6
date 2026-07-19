@@ -22,6 +22,7 @@ concurrency:
 
 env:
   REPAIR_ACTIVATION_UTC: "2026-07-19T12:00:00Z"
+  REPAIR_VALIDATION_ACTIVATION_UTC: "2026-07-19T11:00:00Z"
   REPAIR_END_UTC: "2026-07-26T06:30:00Z"
   REPAIR_TOLERANCE_HOURS: "1.75"
   REPAIR_ADAPTER_ID: "support_constrained_coverage_normalized_v1"
@@ -91,12 +92,17 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
+          activation="$REPAIR_ACTIVATION_UTC"
+          if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+            activation="$REPAIR_VALIDATION_ACTIVATION_UTC"
+          fi
+          echo "Using activation ${activation}; production remains ${REPAIR_ACTIVATION_UTC}"
           mkdir -p artifacts/support-repaired-shadow
           python scripts/build_support_repaired_shadow.py \
             --per-book-scores prospective-data/data/derived/latest/shadow/per-book-shadow-scores.csv.gz \
             --bundle-root artifacts/generic-action-shadow/bundle \
             --output-root artifacts/support-repaired-shadow \
-            --activation-utc "$REPAIR_ACTIVATION_UTC" \
+            --activation-utc "$activation" \
             --cutoff-tolerance-hours "$REPAIR_TOLERANCE_HOURS" \
             --adapter-id "$REPAIR_ADAPTER_ID" \
             2>&1 | tee artifacts/support-repaired-shadow/run.log
