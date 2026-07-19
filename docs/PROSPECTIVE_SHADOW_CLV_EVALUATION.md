@@ -17,7 +17,9 @@ Candidates are joined to Phase 32 closing targets using the exact tuple:
 - market key;
 - realized observation snapshot ID.
 
-The evaluator rejects mixed model bundles, duplicate observation identities, unsupported cutoff buckets, false research-policy flags, forbidden result fields and invalid observation → close → commence chronology.
+Every supplied candidate must have exactly one matching closing target. The evaluator fails closed rather than silently dropping candidates whose closing evidence is absent.
+
+The evaluator rejects mixed model bundles, duplicate observation identities, unsupported cutoff buckets, false research-policy flags, invalid bundle checksums, non-finite ranking scores, forbidden result fields and invalid observation → close → commence chronology.
 
 ## Frozen support
 
