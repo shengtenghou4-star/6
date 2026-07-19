@@ -8,15 +8,6 @@ on:
       - completed
     branches:
       - main
-  push:
-    branches:
-      - main
-    paths:
-      - ".github/workflows/prospective-campaign-liveness.yml"
-      - "src/marketlab/prospective_campaign_liveness.py"
-      - "scripts/audit_prospective_campaign_liveness.py"
-      - "tests/test_prospective_campaign_liveness.py"
-      - "docs/PROSPECTIVE_CAMPAIGN_LIVENESS_AUDIT.md"
   schedule:
     - cron: "27 1-23/3 * * *"
   workflow_dispatch:
@@ -137,3 +128,4 @@ jobs:
 
 # This workflow makes no paid provider request and reads no outcome or closing
 # performance fields. It runs after the canonical refresh; cron remains fallback.
+# Pull requests validate code, while production audits wait for aligned adapters.

@@ -91,22 +91,25 @@ jobs:
             --seed 20260719 \
             2>&1 | tee artifacts/evidence-power-forecast/run.log
 
-      - name: Persist immutable forecast
+      - name: Persist immutable forecast and latest pointer
         if: steps.window.outputs.active == 'true' && github.event_name != 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
-          target="prospective-data/data/forecasts/evidence-power/${GITHUB_RUN_ID}"
-          if [[ -e "$target" ]]; then
-            echo "Forecast target already exists: $target" >&2
+          run_target="prospective-data/data/forecasts/evidence-power/${GITHUB_RUN_ID}"
+          latest_target="prospective-data/data/derived/latest/evidence-power-forecast"
+          if [[ -e "$run_target" ]]; then
+            echo "Forecast target already exists: $run_target" >&2
             exit 1
           fi
-          mkdir -p "$(dirname "$target")"
-          cp -a artifacts/evidence-power-forecast "$target"
+          mkdir -p "$(dirname "$run_target")" "$(dirname "$latest_target")"
+          cp -a artifacts/evidence-power-forecast "$run_target"
+          rm -rf "$latest_target"
+          cp -a artifacts/evidence-power-forecast "$latest_target"
           cd prospective-data
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "data/forecasts/evidence-power/${GITHUB_RUN_ID}"
+          git add data/forecasts/evidence-power data/derived/latest/evidence-power-forecast
           git commit -m "Record prospective evidence forecast ${GITHUB_RUN_ID}"
           for attempt in 1 2 3; do
             git pull --rebase origin prospective-data
