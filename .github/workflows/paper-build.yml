@@ -4,12 +4,14 @@ on:
   pull_request:
     paths:
       - "paper/**"
+      - "scripts/prepare_paper_build.py"
       - ".github/workflows/paper-build.yml"
   push:
     branches:
       - main
     paths:
       - "paper/**"
+      - "scripts/prepare_paper_build.py"
       - ".github/workflows/paper-build.yml"
   workflow_dispatch:
 
@@ -23,18 +25,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Prepare output directory
-        run: mkdir -p artifacts/paper
+      - name: Prepare print-safe manuscript source
+        run: |
+          mkdir -p artifacts/paper
+          python scripts/prepare_paper_build.py \
+            --output artifacts/paper/manuscript-build.md
 
       - name: Compile manuscript PDF
         uses: docker://pandoc/latex:3.1
         with:
           args: >-
-            paper/manuscript.md
+            artifacts/paper/manuscript-build.md
             --from=gfm+tex_math_dollars
             --standalone
             --toc
-            --number-sections
             --pdf-engine=xelatex
             -V geometry:margin=1in
             -V fontsize=11pt
