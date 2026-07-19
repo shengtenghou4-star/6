@@ -1,6 +1,11 @@
 name: Prospective Evidence Power Forecast
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/prospective-evidence-power-forecast.yml"
   workflow_run:
     workflows:
       - "Prospective Sequence Campaign"
