@@ -1,0 +1,46 @@
+name: Experiment 018 Matched Budget Friction
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "scripts/experiment_018_matched_budget_friction.py"
+      - "docs/EXPERIMENT_018_PROTOCOL.md"
+      - ".github/workflows/experiment-018-matched-budget-friction.yml"
+
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install
+        run: python -m pip install -e ".[dev]"
+      - name: Run matched-budget execution-friction diagnostic
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p artifacts/experiment-018
+          python scripts/experiment_018_matched_budget_friction.py \
+            --output-root artifacts/experiment-018 \
+            2>&1 | tee artifacts/experiment-018/run.log
+      - name: Upload result evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-018-matched-budget-friction-${{ github.run_id }}
+          path: |
+            artifacts/experiment-018/result.json
+            artifacts/experiment-018/failure.json
+            artifacts/experiment-018/progress.json
+            artifacts/experiment-018/run.log
+            artifacts/experiment-018/scenario-summary.csv
+            artifacts/experiment-018/execution-prices.csv.gz
+            artifacts/experiment-018/*-policy-before-outcomes.csv.gz
+            artifacts/experiment-018/scenario-ledgers/*.csv.gz
+          retention-days: 90
+          if-no-files-found: warn
