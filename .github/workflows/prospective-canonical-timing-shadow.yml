@@ -1,0 +1,145 @@
+name: Prospective Canonical Timing Shadow
+
+on:
+  schedule:
+    - cron: "17 */3 * * *"
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "src/marketlab/canonical_timing_shadow.py"
+      - "scripts/build_canonical_timing_shadow.py"
+      - "tests/test_canonical_timing_shadow.py"
+      - "docs/PROSPECTIVE_CANONICAL_TIMING_SHADOW.md"
+      - ".github/workflows/prospective-canonical-timing-shadow.yml"
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: prospective-canonical-timing-shadow
+  cancel-in-progress: false
+
+env:
+  ADAPTER_ACTIVATION_UTC: "2026-07-19T15:00:00Z"
+  VALIDATION_ACTIVATION_UTC: "2026-07-19T06:00:00Z"
+  CAMPAIGN_END_UTC: "2026-07-26T06:30:00Z"
+  ADAPTER_ID: "canonical_cutoff_coverage_normalized_v1"
+  MODEL_ARTIFACT_ID: "8435876486"
+  MODEL_ARTIFACT_SHA256: "53c5218fc3a0e20edcfcb7002ee08d76348e8115e590082b824cc0a16a209a37"
+
+jobs:
+  canonical:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check frozen adapter window
+        id: window
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os
+          from datetime import UTC, datetime
+          from pathlib import Path
+
+          def parse(value):
+              return datetime.fromisoformat(value.replace("Z", "+00:00")).astimezone(UTC)
+
+          now = datetime.now(UTC)
+          active = parse(os.environ["ADAPTER_ACTIVATION_UTC"]) <= now < parse(os.environ["CAMPAIGN_END_UTC"])
+          if os.environ.get("GITHUB_EVENT_NAME") == "pull_request":
+              active = True
+          with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as handle:
+              handle.write(f"active={'true' if active else 'false'}\n")
+          print({"now": now.isoformat(), "active": active})
+          PY
+
+      - name: Check out cumulative prospective state
+        if: steps.window.outputs.active == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: prospective-data
+          path: prospective-data
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        if: steps.window.outputs.active == 'true'
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install
+        if: steps.window.outputs.active == 'true'
+        run: python -m pip install -e ".[dev]"
+
+      - name: Unit tests
+        if: steps.window.outputs.active == 'true'
+        run: pytest -q tests/test_canonical_timing_shadow.py
+
+      - name: Download frozen generic action-shadow bundle
+        if: steps.window.outputs.active == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/generic-action-shadow
+          gh api "/repos/${GITHUB_REPOSITORY}/actions/artifacts/${MODEL_ARTIFACT_ID}/zip" > artifacts/generic-action-shadow.zip
+          echo "${MODEL_ARTIFACT_SHA256}  artifacts/generic-action-shadow.zip" | sha256sum -c -
+          unzip -q artifacts/generic-action-shadow.zip -d artifacts/generic-action-shadow
+
+      - name: Build canonical-timing shadow
+        if: steps.window.outputs.active == 'true'
+        shell: bash
+        run: |
+          set -o pipefail
+          activation="$ADAPTER_ACTIVATION_UTC"
+          if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+            activation="$VALIDATION_ACTIVATION_UTC"
+          fi
+          echo "Using activation ${activation}; production remains ${ADAPTER_ACTIVATION_UTC}"
+          mkdir -p artifacts/canonical-timing-shadow
+          python scripts/build_canonical_timing_shadow.py \
+            --per-book-scores prospective-data/data/derived/latest/shadow/per-book-shadow-scores.csv.gz \
+            --bundle-root artifacts/generic-action-shadow/bundle \
+            --output-root artifacts/canonical-timing-shadow \
+            --activation-utc "$activation" \
+            --adapter-id "$ADAPTER_ID" \
+            2>&1 | tee artifacts/canonical-timing-shadow/run.log
+
+      - name: Persist immutable scheduled adapter evidence
+        if: steps.window.outputs.active == 'true' && github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_target="prospective-data/data/canonical-timing-runs/${GITHUB_RUN_ID}"
+          latest_target="prospective-data/data/derived/latest/canonical-timing-shadow"
+          if [[ -e "$run_target" ]]; then
+            echo "Immutable adapter target already exists: $run_target" >&2
+            exit 1
+          fi
+          mkdir -p "$(dirname "$run_target")" "$(dirname "$latest_target")"
+          cp -a artifacts/canonical-timing-shadow "$run_target"
+          rm -rf "$latest_target"
+          cp -a artifacts/canonical-timing-shadow "$latest_target"
+          cd prospective-data
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/canonical-timing-runs data/derived/latest/canonical-timing-shadow
+          git commit -m "Record canonical-timing shadow ${GITHUB_RUN_ID}"
+          git pull --rebase origin prospective-data
+          git push origin HEAD:prospective-data
+
+      - name: Upload adapter evidence
+        if: always() && steps.window.outputs.active == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: prospective-canonical-timing-shadow-${{ github.run_id }}
+          path: artifacts/canonical-timing-shadow/
+          retention-days: 90
+          if-no-files-found: warn
+
+# This workflow performs no paid API request. It processes already-persisted,
+# outcome-blind prospective scores and leaves both earlier streams unchanged.
