@@ -37,16 +37,29 @@ def _require(frame: pd.DataFrame, columns: list[str], label: str) -> None:
 
 def attach_closing_clv(candidates: pd.DataFrame, closing: pd.DataFrame) -> pd.DataFrame:
     forbidden = {"result", "winner", "home_score", "away_score", "score_home", "score_away"}
-    present_forbidden = sorted((set(candidates.columns) | set(closing.columns)) & forbidden)
+    present_forbidden = sorted(
+        column
+        for column in (set(candidates.columns) | set(closing.columns))
+        if str(column).casefold() in forbidden
+    )
     if present_forbidden:
         raise ValueError(f"outcome fields are forbidden: {present_forbidden}")
     candidate_required = JOIN_KEYS_LEFT + [
-        "raw_candidate_outcome", "raw_candidate_score", "action_rank_score_for_raw_candidate",
-        "supported_closing_cutoff_hours", "realized_snapshot_ingested_at", "research_only", "no_execution",
-        "unvalidated_prospective_transfer", "bundle_id", "bundle_manifest_sha256",
+        "raw_candidate_outcome",
+        "raw_candidate_score",
+        "action_rank_score_for_raw_candidate",
+        "supported_closing_cutoff_hours",
+        "realized_snapshot_ingested_at",
+        "research_only",
+        "no_execution",
+        "unvalidated_prospective_transfer",
+        "bundle_id",
+        "bundle_manifest_sha256",
     ]
     closing_required = JOIN_KEYS_RIGHT + [
-        "closing_snapshot_id", "closing_snapshot_ingested_at", "commence_time",
+        "closing_snapshot_id",
+        "closing_snapshot_ingested_at",
+        "commence_time",
         *[f"closing_log_odds_clv_{outcome}" for outcome in OUTCOMES],
         *[f"closing_delta_{outcome}_p" for outcome in OUTCOMES],
     ]
@@ -65,8 +78,34 @@ def attach_closing_clv(candidates: pd.DataFrame, closing: pd.DataFrame) -> pd.Da
         raise ValueError("shadow policy flags are not all true")
     if candidates["bundle_id"].nunique() != 1 or candidates["bundle_manifest_sha256"].nunique() != 1:
         raise ValueError("prospective evaluation must use one frozen bundle")
+    manifest_sha = str(candidates["bundle_manifest_sha256"].iloc[0])
+    if len(manifest_sha) != 64 or any(
+        character not in "0123456789abcdef"
+        for character in manifest_sha.casefold()
+    ):
+        raise ValueError("invalid bundle manifest SHA-256")
+    if not np.isfinite(
+        candidates[
+            ["raw_candidate_score", "action_rank_score_for_raw_candidate"]
+        ].to_numpy(float)
+    ).all():
+        raise ValueError("non-finite candidate ranking score")
     if not candidates["supported_closing_cutoff_hours"].isin(CUTOFFS).all():
         raise ValueError("unsupported closing cutoff bucket")
+
+    availability = candidates[JOIN_KEYS_LEFT].merge(
+        closing[JOIN_KEYS_RIGHT],
+        left_on=JOIN_KEYS_LEFT,
+        right_on=JOIN_KEYS_RIGHT,
+        how="left",
+        validate="one_to_one",
+        indicator=True,
+    )
+    missing_targets = int((availability["_merge"] != "both").sum())
+    if missing_targets:
+        raise ValueError(
+            f"missing exact closing targets for {missing_targets} candidates"
+        )
 
     joined = candidates.merge(
         closing,
@@ -84,7 +123,9 @@ def attach_closing_clv(candidates: pd.DataFrame, closing: pd.DataFrame) -> pd.Da
     closing_time = pd.to_datetime(
         joined["closing_snapshot_ingested_at"], utc=True, errors="coerce"
     )
-    commence_time = pd.to_datetime(joined["commence_time"], utc=True, errors="coerce")
+    commence_time = pd.to_datetime(
+        joined["commence_time"], utc=True, errors="coerce"
+    )
     if observation_time.isna().any() or closing_time.isna().any() or commence_time.isna().any():
         raise ValueError("invalid prospective evaluation timestamps")
     if (observation_time >= closing_time).any() or (closing_time >= commence_time).any():
@@ -101,10 +142,15 @@ def attach_closing_clv(candidates: pd.DataFrame, closing: pd.DataFrame) -> pd.Da
         [f"closing_delta_{outcome}_p" for outcome in OUTCOMES]
     ].to_numpy(float)
     joined["candidate_closing_log_clv"] = log_values[rows, outcome_index]
-    joined["candidate_closing_fair_probability_clv"] = fair_values[rows, outcome_index]
+    joined["candidate_closing_fair_probability_clv"] = fair_values[
+        rows, outcome_index
+    ]
     if not np.isfinite(
         joined[
-            ["candidate_closing_log_clv", "candidate_closing_fair_probability_clv"]
+            [
+                "candidate_closing_log_clv",
+                "candidate_closing_fair_probability_clv",
+            ]
         ].to_numpy(float)
     ).all():
         raise ValueError("non-finite candidate closing CLV")
@@ -128,12 +174,22 @@ def freeze_snapshot_strategies(
         output.loc[group.index, "eligible_snapshot_cutoff_group"] = True
         trade_count = int(np.floor(len(group) * policy.trade_fraction))
         baseline = group.sort_values(
-            ["raw_candidate_score", "event_id", "bookmaker_key", "raw_candidate_outcome"],
+            [
+                "raw_candidate_score",
+                "event_id",
+                "bookmaker_key",
+                "raw_candidate_outcome",
+            ],
             ascending=[False, True, True, True],
             kind="mergesort",
         )
         action = group.sort_values(
-            ["action_rank_score_for_raw_candidate", "event_id", "bookmaker_key", "raw_candidate_outcome"],
+            [
+                "action_rank_score_for_raw_candidate",
+                "event_id",
+                "bookmaker_key",
+                "raw_candidate_outcome",
+            ],
             ascending=[False, True, True, True],
             kind="mergesort",
         )
@@ -146,13 +202,18 @@ def freeze_snapshot_strategies(
         output["action_traded"], output["candidate_closing_log_clv"], 0.0
     )
     output["incremental_opportunity_log_clv"] = (
-        output["action_opportunity_log_clv"] - output["baseline_opportunity_log_clv"]
+        output["action_opportunity_log_clv"]
+        - output["baseline_opportunity_log_clv"]
     )
     output["baseline_opportunity_fair_clv"] = np.where(
-        output["baseline_traded"], output["candidate_closing_fair_probability_clv"], 0.0
+        output["baseline_traded"],
+        output["candidate_closing_fair_probability_clv"],
+        0.0,
     )
     output["action_opportunity_fair_clv"] = np.where(
-        output["action_traded"], output["candidate_closing_fair_probability_clv"], 0.0
+        output["action_traded"],
+        output["candidate_closing_fair_probability_clv"],
+        0.0,
     )
     return output
 
@@ -194,7 +255,9 @@ def _strategy_metrics(
     return {
         "opportunities": int(len(rows)),
         "trades": int(len(traded)),
-        "mean_trade_log_clv": float(traded["candidate_closing_log_clv"].mean())
+        "mean_trade_log_clv": float(
+            traded["candidate_closing_log_clv"].mean()
+        )
         if len(traded)
         else None,
         "mean_opportunity_log_clv": float(
@@ -275,7 +338,9 @@ def evaluate_prospective_shadow(
         "incremental_log_clv_ci_above_zero": comparison["ci95_low"] > 0.0,
         "action_trade_log_clv_ci_above_zero": bool(
             action_metrics["positive_trade_log_clv_bootstrap"]
-            and action_metrics["positive_trade_log_clv_bootstrap"]["ci95_low"]
+            and action_metrics["positive_trade_log_clv_bootstrap"][
+                "ci95_low"
+            ]
             > 0.0
         ),
         "action_fair_probability_clv_positive": bool(
