@@ -19,7 +19,9 @@ def ledger(*, residual: bool) -> pd.DataFrame:
             "hours_before_kickoff": [24] * 6,
             "filled": [True] * 6,
             "won": [value > 0 for value in returns],
-            "executed_decimal_odds": [value + 1 if value > 0 else 2.0 for value in returns],
+            "executed_decimal_odds": [
+                value + 1 if value > 0 else 2.0 for value in returns
+            ],
             "net_return_after_friction": returns,
             "book_slot": ["b1", "b1", "b2", "b2", "b3", "b3"],
             "bookmaker_name": ["A", "A", "B", "B", "C", "C"],
@@ -35,8 +37,12 @@ def test_attributes_point_return_by_outcome_and_without_home() -> None:
         replicates=100,
         seed=7,
     )
-    home = table[(table["group_kind"] == "outcome") & (table["group"] == "home")].iloc[0]
-    draw = table[(table["group_kind"] == "outcome") & (table["group"] == "draw")].iloc[0]
+    home = table[
+        (table["group_kind"] == "outcome") & (table["group"] == "home")
+    ].iloc[0]
+    draw = table[
+        (table["group_kind"] == "outcome") & (table["group"] == "draw")
+    ].iloc[0]
     non_home = table[table["group"] == "non_home"].iloc[0]
     without_home = table[table["group"] == "without_home"].iloc[0]
 
@@ -44,7 +50,8 @@ def test_attributes_point_return_by_outcome_and_without_home() -> None:
     assert draw["incremental_profit_units"] == pytest.approx(-2.5)
     assert non_home["incremental_profit_units"] == pytest.approx(-1.7)
     assert without_home["incremental_profit_units"] == pytest.approx(-1.7)
-    assert summary["home_dependent_point_attribution"] is not True if "home_dependent_point_attribution" in summary else True
+    assert summary["non_home_incremental_positive"] is False
+    assert summary["without_home_incremental_positive"] is False
     assert summary["maximum_positive_outcome_contribution_share"] == pytest.approx(1.0)
 
 
