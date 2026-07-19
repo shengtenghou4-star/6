@@ -1,0 +1,212 @@
+name: Prospective Sequence Campaign
+
+on:
+  schedule:
+    - cron: "47 */3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: prospective-sequence-campaign
+  cancel-in-progress: false
+
+env:
+  CAMPAIGN_START_UTC: "2026-07-19T06:00:00Z"
+  CAMPAIGN_END_UTC: "2026-07-26T06:30:00Z"
+  MAX_PAID_SPORTS: "4"
+  MAX_RUN_CREDITS: "4"
+  HORIZON_HOURS: "60"
+  REGION: "uk"
+  MODEL_ARTIFACT_ID: "8435876486"
+  MODEL_ARTIFACT_SHA256: "53c5218fc3a0e20edcfcb7002ee08d76348e8115e590082b824cc0a16a209a37"
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install
+        run: python -m pip install -e .
+
+      - name: Check frozen campaign window
+        id: window
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os
+          from datetime import UTC, datetime
+          from pathlib import Path
+
+          def parse(value: str) -> datetime:
+              return datetime.fromisoformat(value.replace("Z", "+00:00")).astimezone(UTC)
+
+          now = datetime.now(UTC)
+          start = parse(os.environ["CAMPAIGN_START_UTC"])
+          end = parse(os.environ["CAMPAIGN_END_UTC"])
+          active = start <= now < end
+          with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as fh:
+              fh.write(f"active={'true' if active else 'false'}\n")
+          print({"now": now.isoformat(), "start": start.isoformat(), "end": end.isoformat(), "active": active})
+          PY
+
+      - name: Validate repository secret
+        if: steps.window.outputs.active == 'true'
+        env:
+          THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
+        run: |
+          if [[ -z "${THE_ODDS_API_KEY}" ]]; then
+            echo "THE_ODDS_API_KEY is missing; no request sent" >&2
+            exit 1
+          fi
+
+      - name: Check out persistent prospective data branch
+        if: steps.window.outputs.active == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: prospective-data
+          path: prospective-data
+          fetch-depth: 1
+
+      - name: Collect bounded near-event snapshots
+        if: steps.window.outputs.active == 'true'
+        env:
+          THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
+        run: |
+          python scripts/run_budgeted_prospective_campaign.py \
+            --output-root artifacts/campaign-run \
+            --max-sports "$MAX_PAID_SPORTS" \
+            --horizon-hours "$HORIZON_HOURS" \
+            --region "$REGION" \
+            --max-run-credits "$MAX_RUN_CREDITS"
+
+      - name: Persist immutable raw and audit evidence
+        if: steps.window.outputs.active == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw_root="prospective-data/data/prospective-odds"
+          run_root="prospective-data/data/campaign-runs/${GITHUB_RUN_ID}"
+          mkdir -p "$raw_root" "$run_root"
+          if compgen -G "artifacts/campaign-run/snapshots/*" > /dev/null; then
+            for snapshot in artifacts/campaign-run/snapshots/*; do
+              target="$raw_root/$(basename "$snapshot")"
+              if [[ -e "$target" ]]; then
+                echo "Duplicate immutable snapshot target: $target" >&2
+                exit 1
+              fi
+              cp -a "$snapshot" "$target"
+            done
+          fi
+          cp -a artifacts/campaign-run/manifest.json "$run_root/"
+          cp -a artifacts/campaign-run/event-scouting "$run_root/"
+          cp -a artifacts/campaign-run/audits "$run_root/"
+
+      - name: Build accumulated leakage-safe sequence ledgers
+        if: steps.window.outputs.active == 'true'
+        run: |
+          python scripts/build_prospective_sequence_ledger.py \
+            --snapshots-root prospective-data/data/prospective-odds \
+            --output-root artifacts/prospective-sequence \
+            --market h2h \
+            --minimum-other-books 3 \
+            --allow-insufficient-overlap
+
+      - name: Score supported three-snapshot action residuals
+        if: steps.window.outputs.active == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          status=$(python - <<'PY'
+          import json
+          print(json.load(open("artifacts/prospective-sequence/manifest.json"))["status"])
+          PY
+          )
+          mkdir -p artifacts/prospective-shadow
+          if [[ "$status" != "materialized" ]]; then
+            python - <<'PY'
+          import json
+          from pathlib import Path
+          source = json.load(open("artifacts/prospective-sequence/manifest.json"))
+          Path("artifacts/prospective-shadow/manifest.json").write_text(
+              json.dumps({
+                  "schema_version": 1,
+                  "status": "sequence_not_ready",
+                  "sequence_status": source["status"],
+                  "reason": source.get("reason"),
+                  "research_only": True,
+                  "no_execution": True,
+              }, indent=2, sort_keys=True),
+              encoding="utf-8",
+          )
+          PY
+            exit 0
+          fi
+
+          mkdir -p artifacts/generic-action-shadow
+          gh api "/repos/${GITHUB_REPOSITORY}/actions/artifacts/${MODEL_ARTIFACT_ID}/zip" > artifacts/generic-action-shadow.zip
+          echo "${MODEL_ARTIFACT_SHA256}  artifacts/generic-action-shadow.zip" | sha256sum -c -
+          unzip -q artifacts/generic-action-shadow.zip -d artifacts/generic-action-shadow
+          python scripts/score_prospective_action_shadow.py \
+            --bundle-root artifacts/generic-action-shadow/bundle \
+            --quote-ledger artifacts/prospective-sequence/quote-ledger.csv.gz \
+            --transitions artifacts/prospective-sequence/consecutive-transitions.csv.gz \
+            --output-root artifacts/prospective-shadow \
+            --allow-no-supported-chains
+
+      - name: Persist derived ledgers and shadow state
+        if: steps.window.outputs.active == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_root="prospective-data/data/campaign-runs/${GITHUB_RUN_ID}"
+          latest_root="prospective-data/data/derived/latest"
+          mkdir -p "$run_root" "$latest_root"
+          rm -rf "$latest_root/sequence" "$latest_root/shadow"
+          cp -a artifacts/prospective-sequence "$run_root/sequence"
+          cp -a artifacts/prospective-shadow "$run_root/shadow"
+          cp -a artifacts/prospective-sequence "$latest_root/sequence"
+          cp -a artifacts/prospective-shadow "$latest_root/shadow"
+
+      - name: Commit immutable campaign state
+        if: steps.window.outputs.active == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd prospective-data
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data
+          if git diff --cached --quiet; then
+            echo "No campaign data changes"
+            exit 0
+          fi
+          git commit -m "Prospective campaign run ${GITHUB_RUN_ID}"
+          git push origin HEAD:prospective-data
+
+      - name: Upload run evidence
+        if: always() && steps.window.outputs.active == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: prospective-sequence-campaign-${{ github.run_id }}
+          path: |
+            artifacts/campaign-run/
+            artifacts/prospective-sequence/
+            artifacts/prospective-shadow/
+          retention-days: 90
+          if-no-files-found: warn
+
+# The cron may continue to trigger after the campaign window, but the window
+# guard exits before secret use or any paid request. Remove the schedule after
+# Phase 36 is closed.
