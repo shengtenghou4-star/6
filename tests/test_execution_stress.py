@@ -101,7 +101,10 @@ def test_metrics_and_comparison_share_opportunity_universe() -> None:
         ExecutionScenario("same", 1, 25, 0.75),
     )
     overlay_frame = frame.copy()
-    overlay_frame["traded"] = overlay_frame.index.between(10, 49)
+    overlay_frame["traded"] = (
+        (overlay_frame.index.to_numpy() >= 10)
+        & (overlay_frame.index.to_numpy() <= 49)
+    )
     overlay = apply_execution_scenario(
         overlay_frame,
         ExecutionScenario("same", 1, 25, 0.75),
