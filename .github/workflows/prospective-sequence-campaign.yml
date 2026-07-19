@@ -1,6 +1,11 @@
 name: Prospective Sequence Campaign
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/prospective-sequence-campaign.yml"
   schedule:
     - cron: "47 */3 * * *"
   workflow_dispatch:
