@@ -14,7 +14,6 @@ from marketlab.action_shadow import (
     sha256,
 )
 
-
 LEDGER_DATETIMES = (
     "snapshot_ingested_at",
     "commence_time",
@@ -25,6 +24,11 @@ TRANSITION_DATETIMES = (
     "previous_snapshot_ingested_at",
     "snapshot_ingested_at",
     "commence_time",
+)
+EXPECTED_EMPTY_MESSAGES = (
+    "no three-snapshot context/realization chains",
+    "no eligible prospective shadow chains",
+    "no chains in historically supported closing horizons",
 )
 
 
@@ -44,6 +48,11 @@ def main() -> None:
     parser.add_argument("--quote-ledger", required=True)
     parser.add_argument("--transitions", required=True)
     parser.add_argument("--output-root", required=True)
+    parser.add_argument(
+        "--allow-no-supported-chains",
+        action="store_true",
+        help="Write an outcome-blind no-supported-chains manifest instead of failing when the accumulated campaign has not yet reached a valid three-snapshot supported horizon.",
+    )
     args = parser.parse_args()
 
     bundle_root = Path(args.bundle_root)
@@ -55,11 +64,54 @@ def main() -> None:
     bundle = load_shadow_bundle(bundle_root)
     ledger = read_frame(ledger_path, LEDGER_DATETIMES)
     transitions = read_frame(transitions_path, TRANSITION_DATETIMES)
-    records, diagnostics = build_shadow_feature_records(
-        ledger,
-        transitions,
-        strict=False,
-    )
+    try:
+        records, diagnostics = build_shadow_feature_records(
+            ledger,
+            transitions,
+            strict=False,
+        )
+    except RuntimeError as exc:
+        if not args.allow_no_supported_chains or not any(
+            marker in str(exc) for marker in EXPECTED_EMPTY_MESSAGES
+        ):
+            raise
+        manifest = {
+            "schema_version": 1,
+            "status": "no_supported_chains",
+            "reason": str(exc),
+            "bundle_id": bundle.bundle_id,
+            "bundle_manifest_sha256": bundle.manifest_sha256,
+            "inputs": {
+                "quote_ledger": {
+                    "path": str(ledger_path),
+                    "sha256": sha256(ledger_path),
+                    "rows": int(len(ledger)),
+                },
+                "transitions": {
+                    "path": str(transitions_path),
+                    "sha256": sha256(transitions_path),
+                    "rows": int(len(transitions)),
+                },
+            },
+            "outputs": {
+                "per_book_scores": {"rows": 0},
+                "event_candidates": {"rows": 0},
+            },
+            "policy": {
+                "research_only": True,
+                "no_execution": True,
+                "unvalidated_prospective_transfer": True,
+                "match_outcomes_used": False,
+                "invalid_or_post_commence_chains_excluded": True,
+            },
+        }
+        (output_root / "manifest.json").write_text(
+            json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True),
+            encoding="utf-8",
+        )
+        print(json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True))
+        return
+
     scored = score_shadow_records(records, bundle)
     candidates = select_event_shadow_candidates(scored)
 
@@ -70,6 +122,7 @@ def main() -> None:
 
     manifest = {
         "schema_version": 1,
+        "status": "scored",
         "bundle_id": bundle.bundle_id,
         "bundle_manifest_sha256": bundle.manifest_sha256,
         "inputs": {
