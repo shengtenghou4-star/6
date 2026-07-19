@@ -1,33 +1,103 @@
 # Football Market Behavior Lab
 
-A research-first football betting market project focused on discovering reproducible signals from bookmaker behavior, market structure, match context, and related information.
+A reproducible research project testing whether deviations from a bookmaker's **expected market behavior** contain incremental information about subsequent football-odds repricing.
 
-## Current working hypothesis
+The project is deliberately narrower than “predict football with AI.” It models what a bookmaker would normally do from contemporaneous market state, measures abnormal action residuals, and asks whether those residuals improve forecasts of the same bookmaker's later price.
 
-A useful starting hypothesis is that bookmaker behavior can be modeled conditionally: learn what a bookmaker would normally do under comparable market conditions, measure deviations from that expected behavior, and test whether those deviations contain incremental information about future outcomes or market states.
+## Current conclusion
 
-This is **not a permanent doctrine**. It is a falsifiable starting point. The project may pivot if evidence supports a better target, representation, model, or research framework.
+The historical evidence supports a real **repricing-information mechanism**:
 
-## Non-negotiable principles
+- match-specific residual alignment beats baseline-preserving shuffled placebos;
+- residual uplift has a graded dose relationship with later same-book closing-price quality across the full opportunity universe;
+- the relationship is positive across every tested cutoff, selected outcome and bookmaker, and survives removing any one bookmaker;
+- related effects transfer to independent timestamped data and unseen-book diagnostics.
 
-- No future-information leakage or timestamp cheating.
-- Raw source data should be preserved whenever practical.
-- Every important result must be reproducible from code, data version, configuration, and experiment record.
-- Negative results are first-class results; do not hide failed hypotheses.
-- Do not claim a signal, model, or data source works without measurable evidence.
-- Separate exploratory findings from validated out-of-sample findings.
-- Research direction, features, models, data sources, and agent roles remain revisable.
+The project has **not** established stable realized profit, executable scalability, account capacity or live-betting readiness. Historical return point estimates are encouraging in some frozen tests, but profit confidence intervals, friction tests and heterogeneity checks still fail the project's validation gates.
 
-## Initial project areas
+The decisive next evidence is an untouched seven-day prospective campaign running from `2026-07-19T06:00:00Z` to `2026-07-26T06:30:00Z`.
 
-- `docs/` — research charter, data scope, decisions, experiment notes
-- `src/collectors/` — data ingestion adapters
-- `src/normalization/` — entity resolution and canonical schemas
-- `src/features/` — feature generation
-- `src/models/` — modeling code
-- `src/audit/` — leakage, quality, reproducibility checks
-- `src/backtest/` — evaluation and strategy testing
-- `configs/` — source/model/experiment configuration
-- `tests/` — tests and regression checks
+## Evidence hierarchy
 
-The repository starts deliberately light. Structure should grow only when real work requires it.
+| Evidence level | Current status | Representative evidence |
+|---|---|---|
+| Bookmaker actions are conditionally modelable | Supported historically and on an independent exact-timestamp feed | Experiments 001–004 |
+| Abnormal residuals predict later same-book repricing | Supported across attribution, shuffled-null, unseen-book and matched-identity tests | Experiments 007–014 |
+| Match-specific alignment matters | Passed 4,000 baseline-preserving circular-shift placebos, `p=0.00025` | [Experiment 019](docs/EXPERIMENT_019_RESULT.md) |
+| Effect is threshold-free | One-SD residual-uplift log-CLV slope `+0.004430`, 95% CI `[+0.003316,+0.005515]`; all four cutoffs positive | [Experiment 021](docs/EXPERIMENT_021_RESULT.md) |
+| Effect is broadly distributed | Positive slope for 8/8 bookmakers, 3/3 selected outcomes and 4/4 cutoffs; every leave-one-book-out lower bound above zero | [Experiment 022](docs/EXPERIMENT_022_RESULT.md) |
+| Historical matched-budget return | Residual policy `+0.565%` ROI versus raw reference `-0.747%`, but uncertainty crosses zero | [Experiment 017](docs/EXPERIMENT_017_RESULT.md) |
+| Execution robustness | Residual ranking direction better in 58/64 scenarios, but practical standalone ROI negative and robustness gate failed | [Experiment 018](docs/EXPERIMENT_018_RESULT.md) |
+| Untouched prospective transfer | In progress | [Phase 36 campaign](docs/PROSPECTIVE_MATCHED_BUDGET_SHADOW.md) |
+| Stable profit and live execution | **Not established** | No authorization follows from this repository |
+
+## Prospective validation
+
+### Original frozen stream
+
+The primary campaign collects bounded, immutable near-event 1X2 snapshots every three hours. It builds leakage-safe quote chains, applies the frozen generic action-residual bundle and records candidate scores without match outcomes.
+
+The original matched-budget campaign-close evaluator is frozen before completion:
+
+- full matured cohort within T-48, T-24, T-12 and T-6;
+- exact `floor(n × 0.05)` raw and residual policies;
+- policy ledgers written and hashed before closing targets are read;
+- exact same-book closing joins;
+- event-cluster uncertainty, cutoff stability, concentration and fixed evidence-volume gates.
+
+See [the frozen cohort protocol](docs/PROSPECTIVE_MATCHED_BUDGET_COHORT_EVALUATION.md).
+
+### Support-repaired parallel stream
+
+An outcome-blind domain-shift audit found two structural deployment mismatches:
+
+1. broad prospective timing windows versus exact historical cutoff states;
+2. a historical 31-peer coverage scale versus the current 19–20-peer provider panel.
+
+The original stream remains unchanged. A separately activated parallel adapter instead:
+
+- retains rows within 1.75 hours of canonical cutoffs and inside the historical `[6h,48h]` range;
+- normalizes active peer-book coverage by contemporaneous panel capacity;
+- recomputes all normal residuals and raw/action scores from the same frozen bundle;
+- writes independent, research-only ledgers.
+
+See [the repair protocol](docs/PROSPECTIVE_SUPPORT_REPAIRED_SHADOW.md), [engineering validation](docs/PROSPECTIVE_SUPPORT_REPAIRED_SHADOW_VALIDATION.md) and [separate final evaluator](docs/PROSPECTIVE_SUPPORT_REPAIRED_COHORT_EVALUATION.md).
+
+## Research safeguards
+
+- **Chronology first:** candidate observations must precede closing targets and kickoff.
+- **Outcome blindness:** prospective scoring and policy selection read no scores, winners or settlement fields.
+- **Identity control:** the raw model fixes bookmaker and outcome identity; residual models rerank the same candidate universe.
+- **Immutable evidence:** raw responses, manifests, policy ledgers and evaluation artifacts receive checksums and write-once locations.
+- **Frozen gates:** sample-size, uncertainty, cutoff and concentration thresholds are fixed before results.
+- **Negative results remain visible:** failed profit, execution and transfer gates are recorded rather than reframed.
+- **No silent dropping:** missing exact targets, invalid chronology, mixed bundles and evidence-flag violations fail closed.
+
+## Reproducibility map
+
+The repository keeps protocol, implementation, workflow and result evidence separate:
+
+- `docs/EXPERIMENT_*_PROTOCOL.md` — frozen questions, constructions and gates;
+- `docs/EXPERIMENT_*_RESULT.md` — supported interpretation and failed checks;
+- `scripts/experiment_*.py` — executable historical diagnostics;
+- `src/marketlab/` — prospective ledgers, scoring, evaluation and audit logic;
+- `.github/workflows/` — pinned experiment and scheduled prospective runs;
+- `tests/` — chronology, identity, quota, tampering and failure-mode regression tests;
+- `prospective-data` branch — immutable campaign snapshots, manifests, forecasts and final evaluation evidence.
+
+Most historical experiments can be rerun through their named GitHub Actions workflow. Workflows verify frozen source or artifact hashes where the evidence boundary requires it and upload the full result bundle even when a run fails.
+
+## What this project may eventually establish
+
+A successful untouched prospective result would support the claim that abnormal bookmaker-action residuals transfer to future same-book price quality outside the historical development data.
+
+It would still not, by itself, prove profitable live execution. That would require separate prospective evidence for latency, fill probability, slippage, limits, account survival and sufficient independent sample size.
+
+## Repository principles
+
+1. No future-information leakage or timestamp cheating.
+2. Raw evidence is preserved whenever practical.
+3. Every important result is tied to code, data, configuration and an experiment record.
+4. Negative results are first-class results.
+5. Exploratory, historical diagnostic and untouched prospective evidence are never presented as interchangeable.
+6. Claims stop where the evidence stops.
