@@ -1,0 +1,44 @@
+name: Experiment 017 Matched Budget Return
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "scripts/experiment_017_matched_budget_return.py"
+      - "docs/EXPERIMENT_017_PROTOCOL.md"
+      - ".github/workflows/experiment-017-matched-budget-return.yml"
+
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install
+        run: python -m pip install -e ".[dev]"
+      - name: Run matched-budget historical return diagnostic
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p artifacts/experiment-017
+          python scripts/experiment_017_matched_budget_return.py \
+            --output-root artifacts/experiment-017 \
+            2>&1 | tee artifacts/experiment-017/run.log
+      - name: Upload result evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-017-matched-budget-return-${{ github.run_id }}
+          path: |
+            artifacts/experiment-017/result.json
+            artifacts/experiment-017/failure.json
+            artifacts/experiment-017/progress.json
+            artifacts/experiment-017/run.log
+            artifacts/experiment-017/*-policy-before-outcomes.csv.gz
+            artifacts/experiment-017/*-settled.csv.gz
+          retention-days: 90
+          if-no-files-found: warn
