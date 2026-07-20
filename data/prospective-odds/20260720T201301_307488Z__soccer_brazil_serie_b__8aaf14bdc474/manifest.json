@@ -1,0 +1,82 @@
+{
+  "diagnostics": {
+    "bookmakers_seen": 130,
+    "events_seen": 7,
+    "invalid_bookmaker_update_times": 0,
+    "invalid_commence_times": 0,
+    "invalid_decimal_prices": 0,
+    "invalid_market_update_times": 0,
+    "malformed_bookmakers": 0,
+    "malformed_events": 0,
+    "malformed_markets": 0,
+    "malformed_outcomes": 0,
+    "markets_seen": 145,
+    "normalized_rows": 435,
+    "outcomes_seen": 435
+  },
+  "endpoint": "/v4/sports/soccer_brazil_serie_b/odds",
+  "http_status": 200,
+  "immutability": "directory creation is exclusive; reruns never overwrite an existing snapshot",
+  "ingested_at_utc": "2026-07-20T20:13:01.307488Z",
+  "normalized": {
+    "fields": [
+      "provider",
+      "snapshot_ingested_at_utc",
+      "event_id",
+      "sport_key",
+      "sport_title",
+      "commence_time",
+      "commence_time_valid",
+      "home_team",
+      "away_team",
+      "bookmaker_key",
+      "bookmaker_title",
+      "bookmaker_last_update",
+      "bookmaker_last_update_valid",
+      "market_key",
+      "market_last_update",
+      "market_last_update_valid",
+      "outcome_name",
+      "outcome_description",
+      "price_decimal",
+      "price_valid_decimal",
+      "point",
+      "point_present",
+      "outcome_link",
+      "outcome_sid"
+    ],
+    "path": "normalized-outcomes.csv",
+    "rows": 435,
+    "unique_bookmakers": 20,
+    "unique_events": 7,
+    "unique_markets": 2
+  },
+  "provider": "the_odds_api_v4",
+  "raw": {
+    "bytes": 37343,
+    "path": "raw-response.json",
+    "sha256": "8aaf14bdc47443fe1caf6fd7f699cc0d245b9be950c4c7769b0bce236392116b"
+  },
+  "request": {
+    "parameters": {
+      "commenceTimeFrom": "2026-07-20T20:12:56Z",
+      "commenceTimeTo": "2026-07-23T08:12:56Z",
+      "dateFormat": "iso",
+      "markets": "h2h",
+      "oddsFormat": "decimal",
+      "regions": "uk"
+    },
+    "sport": "soccer_brazil_serie_b"
+  },
+  "response_headers": {
+    "content-type": "application/json; charset=utf-8",
+    "quota": {
+      "x-requests-last": "1",
+      "x-requests-remaining": "451",
+      "x-requests-used": "49"
+    }
+  },
+  "response_url_without_api_key": "https://api.the-odds-api.com/v4/sports/soccer_brazil_serie_b/odds?markets=h2h&oddsFormat=decimal&dateFormat=iso&regions=uk&commenceTimeFrom=2026-07-20T20%3A12%3A56Z&commenceTimeTo=2026-07-23T08%3A12%3A56Z",
+  "schema_version": 1,
+  "timing_note": "ingested_at_utc is collector time; bookmaker/market last_update fields are preserved separately when supplied by the provider"
+}
