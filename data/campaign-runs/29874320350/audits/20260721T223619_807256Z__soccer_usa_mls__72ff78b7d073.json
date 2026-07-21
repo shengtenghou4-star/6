@@ -1,0 +1,107 @@
+{
+  "blocking_reasons": [],
+  "coverage": {
+    "checks": {
+      "at_least_one_complete_quote_state": true,
+      "effective_update_timestamp_fraction": true,
+      "event_book_coverage_fraction": true,
+      "nonempty_events": true,
+      "normalization_invalid_diagnostics_zero": true,
+      "precommence_event_fraction": true
+    },
+    "complete_books_per_event_max": 20,
+    "complete_books_per_event_median": 20.0,
+    "complete_books_per_event_min": 19,
+    "complete_h2h_quote_states": 294,
+    "effective_update_age_seconds_max": 141.807256,
+    "effective_update_age_seconds_median": 31.807256,
+    "effective_update_timestamp_fraction": 1.0,
+    "events": 15,
+    "events_with_any_complete_h2h_state": 15,
+    "events_with_minimum_book_coverage": 15,
+    "fraction_events_with_minimum_book_coverage": 1.0,
+    "normalization_invalid_diagnostics_total": 0,
+    "precommence_quote_state_fraction": 1.0,
+    "quote_group_diagnostics": {
+      "ambiguous_groups": 0,
+      "complete_h2h_groups": 294,
+      "groups_seen": 294,
+      "incomplete_groups": 0,
+      "invalid_price_groups": 0,
+      "invalid_team_or_event_groups": 0
+    }
+  },
+  "decisions": {
+    "authenticated_source_connected": true,
+    "suitable_for_repeated_snapshot_pilot": true,
+    "suitable_for_untouched_repricing_clv_now": false,
+    "untouched_repricing_clv_reason": "one authenticated snapshot can verify connectivity, coverage and timestamps but cannot form prospective transitions or elapsed closing targets"
+  },
+  "integrity": {
+    "checks": {
+      "http_status_200": true,
+      "normalized_reconciliation": true,
+      "provider_matches": true,
+      "raw_sha_verified": true
+    },
+    "reconciliation_checks": {
+      "row_count_matches": true,
+      "unique_bookmaker_count_matches": true,
+      "unique_event_count_matches": true,
+      "unique_market_count_matches": true
+    }
+  },
+  "policy": {
+    "maximum_named_bookmakers": 10,
+    "maximum_nonempty_request_cost": 1,
+    "maximum_regions": 1,
+    "minimum_complete_books_per_event": 4,
+    "minimum_effective_update_timestamp_fraction": 0.8,
+    "minimum_fraction_events_with_book_coverage": 0.8,
+    "minimum_precommence_event_fraction": 0.95,
+    "required_market": "h2h"
+  },
+  "quota": {
+    "checks": {
+      "headers_present_and_integer": true,
+      "nonnegative": true,
+      "pilot_cost_at_most_one": true
+    },
+    "last": 1,
+    "remaining": 433,
+    "used": 67
+  },
+  "request_scope": {
+    "bookmakers": [],
+    "checks": {
+      "exactly_one_location_selector": true,
+      "h2h_only": true,
+      "named_bookmaker_maximum": true,
+      "one_region_maximum": true
+    },
+    "markets": [
+      "h2h"
+    ],
+    "regions": [
+      "uk"
+    ]
+  },
+  "secret_safety": {
+    "api_key_parameter_markers": [],
+    "checks": {
+      "evidence_scan_passed": true,
+      "response_url_has_no_api_key_parameter": true
+    },
+    "exact_secret_matches": [],
+    "passed": true
+  },
+  "snapshot": {
+    "directory": "artifacts/campaign-run/snapshots/20260721T223619_807256Z__soccer_usa_mls__72ff78b7d073",
+    "ingested_at_utc": "2026-07-21T22:36:19.807256+00:00",
+    "normalized_rows": 1017,
+    "raw_sha256": "72ff78b7d0734c3eaf66b7353931e81e1b98a9b9e94241d2c94a25af72e977ca",
+    "snapshot_id": "20260721T223619_807256Z__soccer_usa_mls__72ff78b7d073",
+    "sport": "soccer_usa_mls"
+  },
+  "status": "completed"
+}
