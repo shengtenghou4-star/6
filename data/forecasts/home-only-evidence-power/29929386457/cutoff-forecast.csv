@@ -1,0 +1,5 @@
+cutoff_hours,current_candidates,current_unique_events,current_raw_positive,current_residual_positive,forecast_median_candidates,forecast_q025_candidates,forecast_q975_candidates,probability_at_least_40,probability_raw_capacity,probability_residual_capacity
+48,62,27,62,62,235.0,189.0,290.0,1.0,1.0,1.0
+24,56,25,56,56,212.0,169.0,264.0,1.0,1.0,1.0
+12,20,20,20,20,76.0,51.0,109.0,0.99935,1.0,1.0
+6,2,2,2,2,8.0,2.0,21.0,0.0003,1.0,1.0
