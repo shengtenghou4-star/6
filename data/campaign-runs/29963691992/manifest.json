@@ -1,0 +1,440 @@
+{
+  "completed_at_utc": "2026-07-22T22:43:53.357169Z",
+  "event_scouting": {
+    "soccer_argentina_primera_division": {
+      "active": true,
+      "endpoint": "/v4/sports/soccer_argentina_primera_division/events",
+      "events_returned": 8,
+      "quota": {
+        "x-requests-last": "0",
+        "x-requests-remaining": "414",
+        "x-requests-used": "86"
+      },
+      "raw_bytes": 1947,
+      "raw_path": "soccer_argentina_primera_division.json",
+      "request_parameters_without_api_key": {
+        "commenceTimeFrom": "2026-07-22T22:43:48Z",
+        "commenceTimeTo": "2026-07-25T10:43:48Z",
+        "dateFormat": "iso"
+      }
+    },
+    "soccer_brazil_campeonato": {
+      "active": true,
+      "endpoint": "/v4/sports/soccer_brazil_campeonato/events",
+      "events_returned": 5,
+      "quota": {
+        "x-requests-last": "0",
+        "x-requests-remaining": "414",
+        "x-requests-used": "86"
+      },
+      "raw_bytes": 1030,
+      "raw_path": "soccer_brazil_campeonato.json",
+      "request_parameters_without_api_key": {
+        "commenceTimeFrom": "2026-07-22T22:43:48Z",
+        "commenceTimeTo": "2026-07-25T10:43:48Z",
+        "dateFormat": "iso"
+      }
+    },
+    "soccer_brazil_serie_b": {
+      "active": true,
+      "endpoint": "/v4/sports/soccer_brazil_serie_b/events",
+      "events_returned": 5,
+      "quota": {
+        "x-requests-last": "0",
+        "x-requests-remaining": "414",
+        "x-requests-used": "86"
+      },
+      "raw_bytes": 1039,
+      "raw_path": "soccer_brazil_serie_b.json",
+      "request_parameters_without_api_key": {
+        "commenceTimeFrom": "2026-07-22T22:43:48Z",
+        "commenceTimeTo": "2026-07-25T10:43:48Z",
+        "dateFormat": "iso"
+      }
+    },
+    "soccer_chile_campeonato": {
+      "active": true,
+      "endpoint": "/v4/sports/soccer_chile_campeonato/events",
+      "events_returned": 2,
+      "quota": {
+        "x-requests-last": "0",
+        "x-requests-remaining": "414",
+        "x-requests-used": "86"
+      },
+      "raw_bytes": 460,
+      "raw_path": "soccer_chile_campeonato.json",
+      "request_parameters_without_api_key": {
+        "commenceTimeFrom": "2026-07-22T22:43:48Z",
+        "commenceTimeTo": "2026-07-25T10:43:48Z",
+        "dateFormat": "iso"
+      }
+    },
+    "soccer_china_superleague": {
+      "active": true,
+      "endpoint": "/v4/sports/soccer_china_superleague/events",
+      "events_returned": 1,
+      "quota": {
+        "x-requests-last": "0",
+        "x-requests-remaining": "414",
+        "x-requests-used": "86"
+      },
+      "raw_bytes": 229,
+      "raw_path": "soccer_china_superleague.json",
+      "request_parameters_without_api_key": {
+        "commenceTimeFrom": "2026-07-22T22:43:48Z",
+        "commenceTimeTo": "2026-07-25T10:43:48Z",
+        "dateFormat": "iso"
+      }
+    },
+    "soccer_conmebol_copa_libertadores": {
+      "active": true,
+      "endpoint": "/v4/sports/soccer_conmebol_copa_libertadores/events",
+      "events_returned": 0,
+      "quota": {
+        "x-requests-last": "0",
+        "x-requests-remaining": "414",
+        "x-requests-used": "86"
+      },
+      "raw_bytes": 3,
+      "raw_path": "soccer_conmebol_copa_libertadores.json",
+      "request_parameters_without_api_key": {
+        "commenceTimeFrom": "2026-07-22T22:43:48Z",
+        "commenceTimeTo": "2026-07-25T10:43:48Z",
+        "dateFormat": "iso"
+      }
+    },
+    "soccer_conmebol_copa_sudamericana": {
+      "active": true,
+      "endpoint": "/v4/sports/soccer_conmebol_copa_sudamericana/events",
+      "events_returned": 5,
+      "quota": {
+        "x-requests-last": "0",
+        "x-requests-remaining": "414",
+        "x-requests-used": "86"
+      },
+      "raw_bytes": 1096,
+      "raw_path": "soccer_conmebol_copa_sudamericana.json",
+      "request_parameters_without_api_key": {
+        "commenceTimeFrom": "2026-07-22T22:43:48Z",
+        "commenceTimeTo": "2026-07-25T10:43:48Z",
+        "dateFormat": "iso"
+      }
+    },
+    "soccer_denmark_superliga": {
+      "active": true,
+      "endpoint": "/v4/sports/soccer_denmark_superliga/events",
+      "events_returned": 1,
+      "quota": {
+        "x-requests-last": "0",
+        "x-requests-remaining": "414",
+        "x-requests-used": "86"
+      },
+      "raw_bytes": 207,
+      "raw_path": "soccer_denmark_superliga.json",
+      "request_parameters_without_api_key": {
+        "commenceTimeFrom": "2026-07-22T22:43:48Z",
+        "commenceTimeTo": "2026-07-25T10:43:48Z",
+        "dateFormat": "iso"
+      }
+    },
+    "soccer_finland_veikkausliiga": {
+      "active": true,
+      "endpoint": "/v4/sports/soccer_finland_veikkausliiga/events",
+      "events_returned": 1,
+      "quota": {
+        "x-requests-last": "0",
+        "x-requests-remaining": "414",
+        "x-requests-used": "86"
+      },
+      "raw_bytes": 218,
+      "raw_path": "soccer_finland_veikkausliiga.json",
+      "request_parameters_without_api_key": {
+        "commenceTimeFrom": "2026-07-22T22:43:48Z",
+        "commenceTimeTo": "2026-07-25T10:43:48Z",
+        "dateFormat": "iso"
+      }
+    },
+    "soccer_korea_kleague1": {
+      "active": true,
+      "endpoint": "/v4/sports/soccer_korea_kleague1/events",
+      "events_returned": 2,
+      "quota": {
+        "x-requests-last": "0",
+        "x-requests-remaining": "414",
+        "x-requests-used": "86"
+      },
+      "raw_bytes": 418,
+      "raw_path": "soccer_korea_kleague1.json",
+      "request_parameters_without_api_key": {
+        "commenceTimeFrom": "2026-07-22T22:43:48Z",
+        "commenceTimeTo": "2026-07-25T10:43:48Z",
+        "dateFormat": "iso"
+      }
+    },
+    "soccer_league_of_ireland": {
+      "active": true,
+      "endpoint": "/v4/sports/soccer_league_of_ireland/events",
+      "events_returned": 1,
+      "quota": {
+        "x-requests-last": "0",
+        "x-requests-remaining": "414",
+        "x-requests-used": "86"
+      },
+      "raw_bytes": 213,
+      "raw_path": "soccer_league_of_ireland.json",
+      "request_parameters_without_api_key": {
+        "commenceTimeFrom": "2026-07-22T22:43:48Z",
+        "commenceTimeTo": "2026-07-25T10:43:48Z",
+        "dateFormat": "iso"
+      }
+    },
+    "soccer_mexico_ligamx": {
+      "active": true,
+      "endpoint": "/v4/sports/soccer_mexico_ligamx/events",
+      "events_returned": 2,
+      "quota": {
+        "x-requests-last": "0",
+        "x-requests-remaining": "414",
+        "x-requests-used": "86"
+      },
+      "raw_bytes": 380,
+      "raw_path": "soccer_mexico_ligamx.json",
+      "request_parameters_without_api_key": {
+        "commenceTimeFrom": "2026-07-22T22:43:48Z",
+        "commenceTimeTo": "2026-07-25T10:43:48Z",
+        "dateFormat": "iso"
+      }
+    },
+    "soccer_norway_eliteserien": {
+      "active": true,
+      "endpoint": "/v4/sports/soccer_norway_eliteserien/events",
+      "events_returned": 0,
+      "quota": {
+        "x-requests-last": "0",
+        "x-requests-remaining": "414",
+        "x-requests-used": "86"
+      },
+      "raw_bytes": 3,
+      "raw_path": "soccer_norway_eliteserien.json",
+      "request_parameters_without_api_key": {
+        "commenceTimeFrom": "2026-07-22T22:43:48Z",
+        "commenceTimeTo": "2026-07-25T10:43:48Z",
+        "dateFormat": "iso"
+      }
+    },
+    "soccer_sweden_allsvenskan": {
+      "active": true,
+      "endpoint": "/v4/sports/soccer_sweden_allsvenskan/events",
+      "events_returned": 1,
+      "quota": {
+        "x-requests-last": "0",
+        "x-requests-remaining": "414",
+        "x-requests-used": "86"
+      },
+      "raw_bytes": 226,
+      "raw_path": "soccer_sweden_allsvenskan.json",
+      "request_parameters_without_api_key": {
+        "commenceTimeFrom": "2026-07-22T22:43:48Z",
+        "commenceTimeTo": "2026-07-25T10:43:48Z",
+        "dateFormat": "iso"
+      }
+    },
+    "soccer_sweden_superettan": {
+      "active": true,
+      "endpoint": "/v4/sports/soccer_sweden_superettan/events",
+      "events_returned": 0,
+      "quota": {
+        "x-requests-last": "0",
+        "x-requests-remaining": "414",
+        "x-requests-used": "86"
+      },
+      "raw_bytes": 3,
+      "raw_path": "soccer_sweden_superettan.json",
+      "request_parameters_without_api_key": {
+        "commenceTimeFrom": "2026-07-22T22:43:48Z",
+        "commenceTimeTo": "2026-07-25T10:43:48Z",
+        "dateFormat": "iso"
+      }
+    },
+    "soccer_usa_mls": {
+      "active": true,
+      "endpoint": "/v4/sports/soccer_usa_mls/events",
+      "events_returned": 15,
+      "quota": {
+        "x-requests-last": "0",
+        "x-requests-remaining": "414",
+        "x-requests-used": "86"
+      },
+      "raw_bytes": 2848,
+      "raw_path": "soccer_usa_mls.json",
+      "request_parameters_without_api_key": {
+        "commenceTimeFrom": "2026-07-22T22:43:48Z",
+        "commenceTimeTo": "2026-07-25T10:43:48Z",
+        "dateFormat": "iso"
+      }
+    }
+  },
+  "match_outcomes_used": false,
+  "no_execution": true,
+  "paid_credits": 4,
+  "paid_requests": 4,
+  "policy": {
+    "horizon_hours": 60.0,
+    "market": "h2h",
+    "maximum_paid_credits_per_run": 4,
+    "maximum_paid_sports_per_run": 4,
+    "region": "uk",
+    "sports": [
+      "soccer_usa_mls",
+      "soccer_brazil_campeonato",
+      "soccer_brazil_serie_b",
+      "soccer_argentina_primera_division",
+      "soccer_mexico_ligamx",
+      "soccer_chile_campeonato",
+      "soccer_finland_veikkausliiga",
+      "soccer_norway_eliteserien",
+      "soccer_sweden_allsvenskan",
+      "soccer_sweden_superettan",
+      "soccer_korea_kleague1",
+      "soccer_china_superleague",
+      "soccer_league_of_ireland",
+      "soccer_conmebol_copa_libertadores",
+      "soccer_conmebol_copa_sudamericana",
+      "soccer_denmark_superliga"
+    ]
+  },
+  "research_only": true,
+  "schema_version": 1,
+  "scouting_window": {
+    "commence_time_from": "2026-07-22T22:43:48Z",
+    "commence_time_to": "2026-07-25T10:43:48Z"
+  },
+  "selected_sports": [
+    {
+      "earliest_commence_time": "2026-07-22T23:30:00Z",
+      "event_count": 15,
+      "event_ids": [
+        "144587319a3ab8cee3a02a28d815914e",
+        "91e73da1636862fccf59fbf2e745e7cf",
+        "b453ea14d7c033045b51018b59635d39",
+        "e5f7bbee08fb7c01da63faaee4f83b38",
+        "f1915283c0febf8297dbb558666a4690",
+        "67b300e5936d7a5b4743101895dca07d",
+        "991b91d4b2ab8022fc2722cb806b93e3",
+        "9b6e52d74e3e078185ecfd02e8198653",
+        "9d65fa134ade9d1be96d983d26764ece",
+        "624a9c22aabb57ddf913177559b4c7b2",
+        "fe8b159820312a859ce06a8c062fb6d4",
+        "28a1bc1c2796424dd61a92a695b07c3a",
+        "9e3e4c1bff938b8f5076f9aa9cf1dbcf",
+        "a86289ceba2168f9574ec8fccf0305b7",
+        "d785780a494faac7a0e326e54a7d52d2"
+      ],
+      "latest_commence_time": "2026-07-23T02:30:00Z",
+      "minimum_hours_to_commence": 0.7699013402777778,
+      "sport_key": "soccer_usa_mls",
+      "weighted_event_score": 45
+    },
+    {
+      "earliest_commence_time": "2026-07-23T00:30:00Z",
+      "event_count": 5,
+      "event_ids": [
+        "418b9adc21c20323f0b8311615c0cef4",
+        "7b0cca084d7d16ef946532414fbbcb53",
+        "d171851925e119650345107d24591b4f",
+        "3035a6e6fd13fdd62f5b8445e795b2bf",
+        "6df3308f8f7f763bfbf6954ec73b0e94"
+      ],
+      "latest_commence_time": "2026-07-23T22:30:00Z",
+      "minimum_hours_to_commence": 1.769901340277778,
+      "sport_key": "soccer_brazil_campeonato",
+      "weighted_event_score": 13
+    },
+    {
+      "earliest_commence_time": "2026-07-22T23:30:00Z",
+      "event_count": 5,
+      "event_ids": [
+        "d419bf8fe33f6751ca9ef9088f1ccc3f",
+        "20d1e1bef89238866a7f1231b5e27941",
+        "46943e14fdf6209a8f857dd835f7c605",
+        "006fdedd126e098ea5f375661f52cae6",
+        "538ad83472464a3ce6edb96e9ec23597"
+      ],
+      "latest_commence_time": "2026-07-24T00:30:00Z",
+      "minimum_hours_to_commence": 0.7699013402777778,
+      "sport_key": "soccer_brazil_serie_b",
+      "weighted_event_score": 12
+    },
+    {
+      "earliest_commence_time": "2026-07-23T00:30:00Z",
+      "event_count": 5,
+      "event_ids": [
+        "9496a9a5346f72dd35cffb800eac7fb5",
+        "ebf2e592382079b9c0f291241cb5acb3",
+        "4934cf8f31416013ec91adee3a0f4794",
+        "0ff2c6af9633805cd92c4110a5a53430",
+        "2cc99c17a93bc9858e4d834bb532ab4f"
+      ],
+      "latest_commence_time": "2026-07-24T00:30:00Z",
+      "minimum_hours_to_commence": 1.769901340277778,
+      "sport_key": "soccer_conmebol_copa_sudamericana",
+      "weighted_event_score": 12
+    }
+  ],
+  "snapshots": [
+    {
+      "admitted_to_repeated_pilot": true,
+      "audit_path": "audits/20260722T224351_656552Z__soccer_usa_mls__399038737aa5.json",
+      "authenticated_source_connected": true,
+      "complete_h2h_quote_states": 294,
+      "events": 15,
+      "minimum_books_per_event": 19,
+      "quota_remaining": 413,
+      "raw_sha256": "399038737aa5aa6171ddbf5acc1be3786b708bfa8bbd3f51ea318cc6deafd227",
+      "request_cost": 1,
+      "snapshot_id": "20260722T224351_656552Z__soccer_usa_mls__399038737aa5",
+      "sport_key": "soccer_usa_mls"
+    },
+    {
+      "admitted_to_repeated_pilot": true,
+      "audit_path": "audits/20260722T224352_495168Z__soccer_brazil_campeonato__d5a671353f8a.json",
+      "authenticated_source_connected": true,
+      "complete_h2h_quote_states": 102,
+      "events": 5,
+      "minimum_books_per_event": 18,
+      "quota_remaining": 412,
+      "raw_sha256": "d5a671353f8a180fb8f89958cb4f93a06c842af45feb75909f8240234c07dd39",
+      "request_cost": 1,
+      "snapshot_id": "20260722T224352_495168Z__soccer_brazil_campeonato__d5a671353f8a",
+      "sport_key": "soccer_brazil_campeonato"
+    },
+    {
+      "admitted_to_repeated_pilot": true,
+      "audit_path": "audits/20260722T224352_851422Z__soccer_brazil_serie_b__845bfb1ea71d.json",
+      "authenticated_source_connected": true,
+      "complete_h2h_quote_states": 92,
+      "events": 5,
+      "minimum_books_per_event": 15,
+      "quota_remaining": 411,
+      "raw_sha256": "845bfb1ea71de9f414105af0cfcc07c0648c53e2e402cf486add2f3655924342",
+      "request_cost": 1,
+      "snapshot_id": "20260722T224352_851422Z__soccer_brazil_serie_b__845bfb1ea71d",
+      "sport_key": "soccer_brazil_serie_b"
+    },
+    {
+      "admitted_to_repeated_pilot": true,
+      "audit_path": "audits/20260722T224353_189594Z__soccer_conmebol_copa_sudamericana__bbd9403a73ea.json",
+      "authenticated_source_connected": true,
+      "complete_h2h_quote_states": 65,
+      "events": 5,
+      "minimum_books_per_event": 13,
+      "quota_remaining": 410,
+      "raw_sha256": "bbd9403a73ea72cb5ffe78d007b9d2b6d98e82a40d8a9ccf3ed3b57ce22c1605",
+      "request_cost": 1,
+      "snapshot_id": "20260722T224353_189594Z__soccer_conmebol_copa_sudamericana__bbd9403a73ea",
+      "sport_key": "soccer_conmebol_copa_sudamericana"
+    }
+  ],
+  "started_at_utc": "2026-07-22T22:43:48Z",
+  "status": "completed"
+}
