@@ -1,0 +1,37 @@
+{
+  "adapter_changes_authorized": false,
+  "closing_targets_used": false,
+  "common_activation_utc": "2026-07-19T15:00:00+00:00",
+  "inputs": {
+    "canonical_timing": {
+      "path": "prospective-data/data/derived/latest/canonical-timing-shadow/canonical-timing-event-candidates.csv.gz",
+      "rows": 300,
+      "sha256": "25d3a78a01bd6a78627e5ef87cac1c5913da031cb173ca322208b997242f3678"
+    },
+    "original": {
+      "path": "prospective-data/data/derived/latest/shadow/event-shadow-candidates.csv.gz",
+      "rows": 456,
+      "sha256": "18b9bc816785870c7067dc484be4bac23b8498a493154858e2514bc4eecdb8e3"
+    },
+    "support_repaired": {
+      "path": "prospective-data/data/derived/latest/support-repaired-shadow/support-repaired-event-candidates.csv.gz",
+      "rows": 85,
+      "sha256": "77c339dfe2a3396ddabe86880228a0ccb4258b994eeae897bf64934497383287"
+    }
+  },
+  "match_outcomes_used": false,
+  "outcome_blind": true,
+  "outputs": {
+    "result": {
+      "path": "result.json",
+      "sha256": "83a8d7c48e52cdf49f689817384b9bf8a2c28046cea19b06e15b8909c739441f"
+    },
+    "stream_profile": {
+      "path": "stream-profile.csv",
+      "rows": 3,
+      "sha256": "48aa388525fe82d87ede91097e882d11e32c1b4a8b261da21f5a52f107ec8ed5"
+    }
+  },
+  "schema_version": 1,
+  "status": "completed"
+}
