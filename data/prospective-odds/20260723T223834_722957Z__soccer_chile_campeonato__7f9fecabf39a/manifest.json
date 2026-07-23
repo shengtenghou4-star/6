@@ -1,0 +1,82 @@
+{
+  "diagnostics": {
+    "bookmakers_seen": 67,
+    "events_seen": 5,
+    "invalid_bookmaker_update_times": 0,
+    "invalid_commence_times": 0,
+    "invalid_decimal_prices": 0,
+    "invalid_market_update_times": 0,
+    "malformed_bookmakers": 0,
+    "malformed_events": 0,
+    "malformed_markets": 0,
+    "malformed_outcomes": 0,
+    "markets_seen": 74,
+    "normalized_rows": 222,
+    "outcomes_seen": 222
+  },
+  "endpoint": "/v4/sports/soccer_chile_campeonato/odds",
+  "http_status": 200,
+  "immutability": "directory creation is exclusive; reruns never overwrite an existing snapshot",
+  "ingested_at_utc": "2026-07-23T22:38:34.722957Z",
+  "normalized": {
+    "fields": [
+      "provider",
+      "snapshot_ingested_at_utc",
+      "event_id",
+      "sport_key",
+      "sport_title",
+      "commence_time",
+      "commence_time_valid",
+      "home_team",
+      "away_team",
+      "bookmaker_key",
+      "bookmaker_title",
+      "bookmaker_last_update",
+      "bookmaker_last_update_valid",
+      "market_key",
+      "market_last_update",
+      "market_last_update_valid",
+      "outcome_name",
+      "outcome_description",
+      "price_decimal",
+      "price_valid_decimal",
+      "point",
+      "point_present",
+      "outcome_link",
+      "outcome_sid"
+    ],
+    "path": "normalized-outcomes.csv",
+    "rows": 222,
+    "unique_bookmakers": 18,
+    "unique_events": 5,
+    "unique_markets": 2
+  },
+  "provider": "the_odds_api_v4",
+  "raw": {
+    "bytes": 20009,
+    "path": "raw-response.json",
+    "sha256": "7f9fecabf39a38235c5de0b2f6426fb6e9c679ad66789e415b0688cddae6816a"
+  },
+  "request": {
+    "parameters": {
+      "commenceTimeFrom": "2026-07-23T22:38:31Z",
+      "commenceTimeTo": "2026-07-26T10:38:31Z",
+      "dateFormat": "iso",
+      "markets": "h2h",
+      "oddsFormat": "decimal",
+      "regions": "uk"
+    },
+    "sport": "soccer_chile_campeonato"
+  },
+  "response_headers": {
+    "content-type": "application/json; charset=utf-8",
+    "quota": {
+      "x-requests-last": "1",
+      "x-requests-remaining": "398",
+      "x-requests-used": "102"
+    }
+  },
+  "response_url_without_api_key": "https://api.the-odds-api.com/v4/sports/soccer_chile_campeonato/odds?markets=h2h&oddsFormat=decimal&dateFormat=iso&regions=uk&commenceTimeFrom=2026-07-23T22%3A38%3A31Z&commenceTimeTo=2026-07-26T10%3A38%3A31Z",
+  "schema_version": 1,
+  "timing_note": "ingested_at_utc is collector time; bookmaker/market last_update fields are preserved separately when supplied by the provider"
+}
