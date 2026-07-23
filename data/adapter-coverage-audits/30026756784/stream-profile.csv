@@ -1,0 +1,4 @@
+stream,rows,events,snapshots
+original,410,53,63
+support_repaired,85,40,29
+canonical_timing,300,52,60
