@@ -1,0 +1,100 @@
+{
+  "adapter_ids": {
+    "canonical_timing": "canonical_cutoff_coverage_normalized_v1",
+    "support_repaired": "support_constrained_coverage_normalized_v1"
+  },
+  "common_activation_utc": "2026-07-19T15:00:00+00:00",
+  "coverage": {
+    "canonical_minus_support_rows": 222,
+    "canonical_share_of_original": 0.7375886524822695,
+    "support_share_of_original": 0.2127659574468085
+  },
+  "inputs": {
+    "canonical_timing": {
+      "path": "prospective-data/data/derived/latest/canonical-timing-shadow/canonical-timing-event-candidates.csv.gz",
+      "rows": 312,
+      "sha256": "2ef9e3737d3f9134f7226995e9e01fe08ab11a765e26716d5973ac5be2f6660f"
+    },
+    "original": {
+      "path": "prospective-data/data/derived/latest/shadow/event-shadow-candidates.csv.gz",
+      "rows": 469,
+      "sha256": "f434d975c5af82640ba1d3e47634d8469a8ec49b8df30611f3f6b7c5358f32ee"
+    },
+    "support_repaired": {
+      "path": "prospective-data/data/derived/latest/support-repaired-shadow/support-repaired-event-candidates.csv.gz",
+      "rows": 90,
+      "sha256": "b558ffcb5b910ed6426b6fa4555f75c625994b907cf7b0177d75b73984d54d75"
+    }
+  },
+  "outcome_blind": true,
+  "pairs": {
+    "original_vs_canonical": {
+      "action_spearman": 0.8415715685686723,
+      "intersection": 312,
+      "jaccard": 0.7375886524822695,
+      "left_only": 111,
+      "raw_spearman": 0.8413103984336155,
+      "right_only": 0,
+      "same_bookmaker_share": 0.8557692307692307,
+      "same_outcome_share": 0.9166666666666666,
+      "union": 423
+    },
+    "original_vs_support": {
+      "action_spearman": 0.8182162406881507,
+      "intersection": 90,
+      "jaccard": 0.2127659574468085,
+      "left_only": 333,
+      "raw_spearman": 0.8946207350701731,
+      "right_only": 0,
+      "same_bookmaker_share": 0.8666666666666667,
+      "same_outcome_share": 0.9111111111111111,
+      "union": 423
+    },
+    "support_vs_canonical": {
+      "action_spearman": 0.9844260608305553,
+      "intersection": 90,
+      "jaccard": 0.28846153846153844,
+      "left_only": 0,
+      "raw_spearman": 0.9878009630818618,
+      "right_only": 222,
+      "same_bookmaker_share": 0.9888888888888889,
+      "same_outcome_share": 1.0,
+      "union": 312
+    }
+  },
+  "streams": {
+    "canonical_timing": {
+      "events": 59,
+      "rows": 312,
+      "rows_by_cutoff": {
+        "12": 72,
+        "24": 163,
+        "48": 53,
+        "6": 24
+      },
+      "snapshots": 63
+    },
+    "original": {
+      "events": 61,
+      "rows": 423,
+      "rows_by_cutoff": {
+        "12": 72,
+        "24": 163,
+        "48": 138,
+        "6": 50
+      },
+      "snapshots": 66
+    },
+    "support_repaired": {
+      "events": 42,
+      "rows": 90,
+      "rows_by_cutoff": {
+        "12": 38,
+        "24": 22,
+        "48": 12,
+        "6": 18
+      },
+      "snapshots": 32
+    }
+  }
+}
